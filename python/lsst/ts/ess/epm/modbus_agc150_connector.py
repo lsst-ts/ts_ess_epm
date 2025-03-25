@@ -35,6 +35,7 @@ from .enums import (
     InputRegistersAgc150,
     InputRegistersAgc150DecimalFactor,
 )
+from .modbus_agc150_simulator import ModbusAgc150Simulator
 
 ModbusValueType = Union[int, float, bool]
 FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
@@ -71,9 +72,9 @@ class ModbusAgc150Connector:
         simulation_mode: int = 0,
     ) -> None:
         self.topics = topics
-        self.simulator = None
-        self.host = config.host
-        self.port = config.port
+        self.simulator = ModbusAgc150Simulator() if simulation_mode == 1 else None
+        self.host = config.host if self.simulator is None else self.simulator.host
+        self.port = config.port if self.simulator is None else self.simulator.port
         if log is None:
             self.log: logging.Logger = logging.getLogger(type(self).__name__)
         else:
@@ -97,8 +98,7 @@ class ModbusAgc150Connector:
         """Connect to the modbus client."""
         if not self.connected:
             if self.simulator is not None:
-                # TODO: Implement simulation mode.
-                pass
+                await self.simulator.start()
             self.client = AsyncModbusTcpClient(
                 self.host,
                 port=self.port,
@@ -118,8 +118,7 @@ class ModbusAgc150Connector:
                 self.client = None
             self.log.info("Modbus client is closed.")
             if self.simulator is not None:
-                # TODO: Implement simulation mode.
-                pass
+                await self.simulator.stop()
 
     def _get_xml_field_name(self, field_name: str) -> str:
         """Get the XML name for AGC150 fields.

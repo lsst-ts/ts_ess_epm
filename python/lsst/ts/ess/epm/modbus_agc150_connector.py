@@ -36,7 +36,7 @@ from .enums import (
     InputRegistersAgc150,
     InputRegistersAgc150DecimalFactor,
 )
-from .modbus_agc150_simulator import ModbusAgc150Simulator
+from .modbus_simulator import ModbusSimulator
 
 ModbusValueType = Union[int, float, bool]
 FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
@@ -73,7 +73,11 @@ class ModbusAgc150Connector(BaseModbusConnector):
         simulation_mode: int = 0,
     ) -> None:
         self.topics = topics
-        self.simulator = ModbusAgc150Simulator() if simulation_mode == 1 else None
+        self.simulator = (
+            ModbusSimulator(modbus_device=config.device_type)
+            if simulation_mode == 1
+            else None
+        )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port
         if log is None:

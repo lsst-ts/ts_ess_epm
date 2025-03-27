@@ -23,27 +23,41 @@ import os
 
 from pymodbus.server import ModbusSimulatorServer
 
+MODBUS_SIMULATOR_SETUP = os.path.dirname(__file__) + "/modbus_simulator_setup.json"
 
-class ModbusAgc150Simulator:
-    """Wrapper around the modbus server for an AGC150 controller.
+
+class ModbusSimulator:
+    """Modbus simulator server.
+
+    All parameters must match values defined in
+    the modbus_simulator_setup.json file.
 
     Parameters
     ----------
-    port : `int`
-        The modbus port.
     host : `str`
         The modbus host.
+    port : `int`
+        The modbus port.
+    modbus_server : `str`
+        The modbus server name.
+    modbus_device : `str`
+        The modbus device name.
+        Also needs to match the device_type in ts_config_ocs.
     """
 
-    def __init__(self, http_port: int = 8080):
-        self.host = "0.0.0.0"
-        self.port = 502
+    def __init__(
+        self,
+        host: str = "0.0.0.0",
+        port: int = 502,
+        modbus_server: str = "server",
+        modbus_device: str = "device",
+    ) -> None:
+        self.host = host
+        self.port = port
         self.server = ModbusSimulatorServer(
-            modbus_server="server",
-            modbus_device="agc150_genset",
-            http_host="localhost",
-            http_port=http_port,
-            json_file=os.path.dirname(__file__) + "/modbus_simulator_setup.json",
+            modbus_server=modbus_server,
+            modbus_device=modbus_device,
+            json_file=MODBUS_SIMULATOR_SETUP,
         )
 
     async def start(self) -> None:

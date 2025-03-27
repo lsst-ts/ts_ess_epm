@@ -16,7 +16,7 @@
     }
   },
   "device_list": {
-    "agc150_genset": {
+    "agc150genset": {
       "setup": {
         "co size": 0,
         "di size": 1000,

@@ -29,6 +29,7 @@ from typing import Union
 from lsst.ts import salobj
 from pymodbus.client import AsyncModbusTcpClient
 
+from .base_modbus_connector import BaseModbusConnector
 from .enums import (
     ARRAY_FIELDS_AGC150,
     DiscreteInputsAgc150,
@@ -44,8 +45,8 @@ FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
 TELEMETRY_WAIT = 1.0
 
 
-class ModbusAgc150Connector:
-    """Class to connect to a modbus client for an AGC150 controller.
+class ModbusAgc150Connector(BaseModbusConnector):
+    """Class to connect to a modbus client for an AGC 150 controller.
 
     Parameters
     ----------
@@ -82,17 +83,6 @@ class ModbusAgc150Connector:
         self.client: AsyncModbusTcpClient = None
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
         self.agc150_fields: dict[str, FieldValueType] = {}
-
-    @property
-    def connected(self) -> bool:
-        """Is the modbus client connected?
-
-        Returns
-        -------
-        `bool`
-            Is the client connected?
-        """
-        return self.client is not None and self.client.connected
 
     async def connect(self) -> None:
         """Connect to the modbus client."""
@@ -137,8 +127,8 @@ class ModbusAgc150Connector:
             The XML field name.
         """
         xml_field_name = field_name
-        for array_field in ARRAY_FIELDS_AGC150:
-            if field_name in ARRAY_FIELDS_AGC150[array_field]:
+        for array_field, array in ARRAY_FIELDS_AGC150.items():
+            if field_name in array:
                 xml_field_name = array_field
                 break
         return xml_field_name
@@ -192,7 +182,13 @@ class ModbusAgc150Connector:
         else:
             self.agc150_fields[field_name] = processed_value
 
-    async def _read_discrete_input(self) -> None:
+    async def _read_coils(self) -> None:
+        self.log.warning("Read coils not implemented for AGC 150.")
+
+    async def _read_holding_registers(self) -> None:
+        self.log.warning("Read holding registers not implemented for AGC 150.")
+
+    async def _read_discrete_inputs(self) -> None:
         """Read the discrete inputs from the modbus client.
 
         Raises
@@ -204,7 +200,7 @@ class ModbusAgc150Connector:
             for discrete_input in DiscreteInputsAgc150:
                 field_name = self._get_xml_field_name(discrete_input.name)
                 response = await self.client.read_discrete_inputs(
-                    discrete_input.value, 1
+                    address=discrete_input.value, count=1
                 )
                 read_value = response.bits[0]
                 self._save_field(field_name, read_value)
@@ -223,7 +219,7 @@ class ModbusAgc150Connector:
             for input_register in InputRegistersAgc150:
                 field_name = self._get_xml_field_name(input_register.name)
                 response = await self.client.read_input_registers(
-                    input_register.value, 1
+                    address=input_register.value, count=1
                 )
                 read_value = response.registers[0]
                 self._save_field(field_name, read_value)
@@ -245,7 +241,7 @@ class ModbusAgc150Connector:
         if self.connected:
             for array_field in ARRAY_FIELDS_AGC150:
                 self.agc150_fields[array_field] = []
-            await self._read_discrete_input()
+            await self._read_discrete_inputs()
             await self._read_input_registers()
             await self.tel_agcGenset150.set_write(**self.agc150_fields)
             await asyncio.sleep(TELEMETRY_WAIT)

@@ -38,8 +38,8 @@ class ModbusDataClientTestCase(unittest.IsolatedAsyncioTestCase):
                 host="127.0.0.1",
                 port=502,
                 max_read_timeouts=5,
-                sensor_name="UnitTest",
-                location="UnitTest",
+                device_name="UnitTest",
+                device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
             self.modbus_data_client = modbus_data_client.ModbusDataClient(

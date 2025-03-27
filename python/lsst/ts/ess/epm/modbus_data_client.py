@@ -24,12 +24,15 @@ __all__ = ["ModbusDataClient"]
 import logging
 import types
 import typing
+from typing import Type
 
 import yaml
 from lsst.ts import salobj
 from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 
-from .modbus_agc150_connector import ModbusAgc150Connector
+from .base_modbus_connector import BaseModbusConnector
+from .enums import ModbusConnectors
+from .utils import load_class
 
 
 class ModbusDataClient(BaseReadLoopDataClient):
@@ -73,7 +76,10 @@ class ModbusDataClient(BaseReadLoopDataClient):
             simulation_mode=simulation_mode,
             auto_reconnect=auto_reconnect,
         )
-        self.modbus_connector = ModbusAgc150Connector(
+
+        connector_class_path = ModbusConnectors[config.device_type].value
+        ConnectorClass: Type[BaseModbusConnector] = load_class(connector_class_path)
+        self.modbus_connector = ConnectorClass(
             config=config,
             topics=topics,
             log=log,
@@ -100,18 +106,18 @@ properties:
     description: Maximum number of read timeouts before an exception is raised.
     type: integer
     default: 5
-  sensor_name:
-    description: The name of the sensor.
+  device_name:
+    description: The name of the device.
     type: string
-  location:
-    description: Sensor location (used for all telemetry topics).
+  device_type:
+    description: The type of the device.
     type: string
 required:
   - host
   - port
   - max_read_timeouts
-  - sensor_name
-  - location
+  - device_name
+  - device_type
 additionalProperties: false
 """
         )
@@ -124,8 +130,8 @@ additionalProperties: false
         """
         return (
             "["
-            f"sensor_name={self.config.sensor_name}, "
-            f"location={self.config.location}, "
+            f"device_name={self.config.device_name}, "
+            f"device_type={self.config.device_type}, "
             f"host={self.config.host}, "
             f"port={self.config.port}"
             "]"

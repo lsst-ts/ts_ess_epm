@@ -21,6 +21,13 @@
 
 from enum import Enum, IntEnum
 
+
+class ModbusConnectors(Enum):
+    """Modbus connectors."""
+
+    agc150genset = "lsst.ts.ess.epm.modbus_agc150_connector.ModbusAgc150Connector"
+
+
 ARRAY_FIELDS_AGC150 = {
     "anyAlarmPMS": (
         "anyAlarmPMS1",

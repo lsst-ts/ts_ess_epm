@@ -2,6 +2,11 @@
 ts_ess_epm
 ##########
 
+``ts_ess_epm`` is a package in the `LSST Science Pipelines <https://pipelines.lsst.io>`_.
 
+This is a complementary package to the `ts_ess_common` package
+for reading telemetries from devices for electric power management.
 
-.. Add a brief (few sentence) description of what this package provides.
+It provides:
+
+- A modbus connector and simulator for AGC 150 controllers.

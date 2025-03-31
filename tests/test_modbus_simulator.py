@@ -19,18 +19,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Sphinx configuration file for an LSST stack package.
+from unittest.mock import AsyncMock, patch
 
-This configuration only affects single-package Sphinx documentation builds.
-"""
+import pytest
+from lsst.ts.ess.epm.modbus_simulator import ModbusSimulator
 
-import lsst.ts.ess.epm  # noqa
-from documenteer.conf.pipelinespkg import *  # type: ignore # noqa
 
-project = "ts_ess_epm"
-html_theme_options["logotext"] = project  # type: ignore # noqa
-html_title = project
-html_short_title = project
+@pytest.mark.asyncio
+async def test_start() -> None:
+    """Test the start method of ModbusSimulator."""
+    with patch("lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer") as MockServer:
+        # Mock the ModbusSimulatorServer
+        mock_server_instance = MockServer.return_value
+        mock_server_instance.run_forever = AsyncMock()
 
-intersphinx_mapping["ts_salobj"] = ("https://ts-salobj.lsst.io", None)  # type: ignore # noqa
-intersphinx_mapping["ts_ess_common"] = ("https://ts-ess-common.lsst.io", None)  # type: ignore # noqa
+        # Create an instance of ModbusSimulator
+        simulator = ModbusSimulator(
+            host="127.0.0.1",
+            port=502,
+            modbus_server="test_server",
+            modbus_device="test_device",
+        )
+
+        # Call the start method
+        await simulator.start()
+
+        # Assert that run_forever was called with the correct arguments
+        mock_server_instance.run_forever.assert_called_once_with(only_start=True)

@@ -6,6 +6,11 @@
 Version History
 ###############
 
+v0.2.0
+------
+
+* Moved all SNMP code here from ts_ess_common.
+
 v0.1.0
 ------
 

@@ -131,7 +131,7 @@ class MibTreeElementType(enum.StrEnum):
 
 # Raritan external sensor IDs for decimal digits telemetry. The Raritan MIB
 # file defines the item types but the external sensor telemetry is not numbered
-# in the same way. Hence the need for an this dict.
+# in the same way. Hence, the need for this dict.
 RARITAN_EXT_SENS_DEC_DIGITS_IDS = {
     "1": "temperature",
     "2": "humidity",
@@ -155,8 +155,8 @@ class RaritanItemId(enum.IntEnum):
     -----
     The values in the MIB file are bit indices starting counting at 0 for
     inlets and outlets but at 1 for external sensors. The real telemetry always
-    starts counting at 1 and not at 0. Therefore the telemetry values have been
-    taken for this enum.
+    starts counting at 1 and not at 0. Therefore, the telemetry values have
+    been taken for this enum.
     """
 
     rmsCurrent = 1

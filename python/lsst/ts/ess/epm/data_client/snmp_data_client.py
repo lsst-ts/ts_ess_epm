@@ -106,12 +106,6 @@ class SnmpDataClient(BaseReadLoopDataClient):
             simulation_mode=simulation_mode,
         )
 
-        # TODO DM-46349 Remove backward compatibility with XML 22.1.
-        if not hasattr(topics, f"tel_{self.config.device_type}"):
-            raise RuntimeError(
-                f"Telemetry for {self.config.device_type} not supported."
-            )
-
         self.mib_tree_holder = MibTreeHolder()
 
         self.device_type = self.config.device_type
@@ -126,7 +120,7 @@ class SnmpDataClient(BaseReadLoopDataClient):
         )
         self.context_data = ContextData()
 
-        # Some SNMP devices emit a LOT of telemetry. Therefore the code loops
+        # Some SNMP devices emit a LOT of telemetry. Therefore, the code loops
         # over one of more ObjectType instances to limit the amount of
         # telemetry items that get queried.
         self.object_types = [
@@ -345,7 +339,7 @@ additionalProperties: false
 
         if self.device_type == DeviceName.raritan.value:
             # Raritan MIB files are very generic. The misc code will not work
-            # with Raritan telemetry. Therefore a dedicated method is needed.
+            # with Raritan telemetry. Therefore, a dedicated method is needed.
             await self.process_telemetry_item_for_raritan_device(telemetry_dict)
         else:
             for telemetry_item in telemetry_items:
@@ -416,7 +410,7 @@ additionalProperties: false
         """Process the SNMP telemetry of a Raritan device.
 
         Raritan devices have a very generic MIB file and a configurable amount
-        of array values for most of their telemetry. Therefore a dedicated
+        of array values for most of their telemetry. Therefore, a dedicated
         method is required to process that telemetry correctly.
 
         Parameters
@@ -665,8 +659,6 @@ additionalProperties: false
 
         This is a **blocking** method that needs to be called with the asyncio
         `run_in_executor` method.
-
-        TODO: DM-49666 After phase-out of Python3.11, remove this method.
 
         Raises
         ------

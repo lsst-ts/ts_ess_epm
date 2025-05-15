@@ -17,6 +17,9 @@ test:
     - ts-utils
     - ts-salobj {{ salobj_version }}
     - pymodbus
+    - pysnmp
+    - pyasn1
+    - pyasn1-modules
   source_files:
     - python
     - tests
@@ -41,3 +44,6 @@ requirements:
     - ts-utils
     - ts-ess-common
     - pymodbus
+    - pysnmp
+    - pyasn1
+    - pyasn1-modules

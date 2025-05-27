@@ -109,7 +109,7 @@ class SnmpServerSimulator:
             )
         ]
 
-    def snmp_cmd(
+    async def snmp_cmd(
         self,
         snmp_engine: SnmpEngine,
         auth_data: CommunityData,
@@ -117,7 +117,7 @@ class SnmpServerSimulator:
         context_data: ContextData,
         *var_binds: typing.Any,
         **options: typing.Any,
-    ) -> typing.Iterator:
+    ) -> typing.AsyncGenerator:
         """Handle all SNMP commands."""
 
         assert snmp_engine is not None
@@ -136,7 +136,8 @@ class SnmpServerSimulator:
 
         if object_identity == self.mib_tree_holder.mib_tree["system"].oid:
             # Handle the getCmd call for the system description.
-            return iter([[None, Integer(0), Integer(0), self.SYS_DESCR]])
+            yield None, Integer(0), Integer(0), self.SYS_DESCR
+            return
         else:
             oid_branch = [
                 t
@@ -144,14 +145,14 @@ class SnmpServerSimulator:
                 if self.mib_tree_holder.mib_tree[t].oid == object_identity
             ]
             if len(oid_branch) != 1:
-                return iter(
-                    [[f"Unknown OID {object_identity}.", Integer(0), Integer(0), ""]]
-                )
+                yield f"Unknown OID {object_identity}.", Integer(0), Integer(0), ""
+                return
 
         self.snmp_items = []
         self._generate_snmp_values(object_identity)
         self.log.debug(f"Returning {self.snmp_items=}")
-        return iter(self.snmp_items)
+        for snmp_item in self.snmp_items:
+            yield snmp_item
 
     def _generate_snmp_values(self, oid: str) -> None:
         """Helper method to generate SNMP values.

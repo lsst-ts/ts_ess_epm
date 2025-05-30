@@ -25,3 +25,4 @@ pytest_session.txt
 .isort.cfg
 .mypy.ini
 .ruff.toml
+towncrier.toml

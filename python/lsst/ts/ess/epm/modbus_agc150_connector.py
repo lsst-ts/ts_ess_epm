@@ -203,8 +203,8 @@ class ModbusAgc150Connector(BaseModbusConnector):
                 response = await self.client.read_discrete_inputs(
                     address=discrete_input.value, count=1
                 )
-                read_value = response.bits[0]
-                self._save_field(field_name, read_value)
+                if response.bits and len(response.bits) > 0:
+                    self._save_field(field_name, response.bits[0])
         else:
             raise RuntimeError("AGC150 connector is not connected.")
 
@@ -222,8 +222,8 @@ class ModbusAgc150Connector(BaseModbusConnector):
                 response = await self.client.read_input_registers(
                     address=input_register.value, count=1
                 )
-                read_value = response.registers[0]
-                self._save_field(field_name, read_value)
+                if response.registers and len(response.registers) > 0:
+                    self._save_field(field_name, response.registers[0])
         else:
             raise RuntimeError("AGC150 connector is not connected")
 

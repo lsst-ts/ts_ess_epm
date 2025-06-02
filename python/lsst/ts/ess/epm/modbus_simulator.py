@@ -60,6 +60,8 @@ class ModbusSimulator:
         self.server = ModbusSimulatorServer(
             modbus_server=modbus_server,
             modbus_device=modbus_device,
+            http_host=None,
+            http_port=None,
             json_file=MODBUS_SIMULATOR_SETUP,
         )
 

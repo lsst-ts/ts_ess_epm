@@ -74,16 +74,13 @@ class ModbusAgc150Connector(BaseModbusConnector):
     ) -> None:
         self.topics = topics
         self.simulator = (
-            ModbusSimulator(modbus_device=config.device_type)
+            ModbusSimulator(log=log, modbus_device=config.device_type)
             if simulation_mode == 1
             else None
         )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port
-        if log is None:
-            self.log: logging.Logger = logging.getLogger(type(self).__name__)
-        else:
-            self.log = log.getChild(type(self).__name__)
+        self.log = log.getChild(type(self).__name__)
         self.client: AsyncModbusTcpClient = None
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
         self.agc150_fields: dict[str, FieldValueType] = {}

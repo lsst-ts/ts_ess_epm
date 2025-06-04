@@ -8,6 +8,21 @@ Version History
 
 .. towncrier release notes start
 
+v0.3.1 (2025-06-04)
+===================
+
+Bug Fixes
+---------
+
+- Fix payload handling for modbus_agc150_connector. (`OSW-74 <https://rubinobs.atlassian.net//browse/OSW-74>`_)
+
+
+Other Changes and Additions
+---------------------------
+
+- Avoid creation of an http server in simulation mode by properly configuring the pymodbus.server.ModbusSimulatorServer class. (`OSW-74 <https://rubinobs.atlassian.net//browse/OSW-74>`_)
+
+
 v0.3.0 (2025-05-30)
 ===================
 

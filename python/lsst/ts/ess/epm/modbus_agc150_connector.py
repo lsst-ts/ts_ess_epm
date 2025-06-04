@@ -38,7 +38,7 @@ from .enums import (
 )
 from .modbus_simulator import ModbusSimulator
 
-ModbusValueType = Union[int, float, bool]
+ModbusValueType = Union[int, float, bool, None]
 FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
 
 # Wait time [s] for the telemetry task.
@@ -74,16 +74,13 @@ class ModbusAgc150Connector(BaseModbusConnector):
     ) -> None:
         self.topics = topics
         self.simulator = (
-            ModbusSimulator(modbus_device=config.device_type)
+            ModbusSimulator(log=log, modbus_device=config.device_type)
             if simulation_mode == 1
             else None
         )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port
-        if log is None:
-            self.log: logging.Logger = logging.getLogger(type(self).__name__)
-        else:
-            self.log = log.getChild(type(self).__name__)
+        self.log = log.getChild(type(self).__name__)
         self.client: AsyncModbusTcpClient = None
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
         self.agc150_fields: dict[str, FieldValueType] = {}
@@ -166,23 +163,46 @@ class ModbusAgc150Connector(BaseModbusConnector):
 
         return signed_value / (10**decimal_factor)
 
-    def _save_field(self, field_name: str, read_value: int | bool) -> None:
+    def _process_modbus_response_array(
+        self,
+        input: DiscreteInputsAgc150 | InputRegistersAgc150,
+        modbus_response_array: list[int | bool],
+    ) -> None:
+        """Process an array of values read from the modbus client.
+
+        Parameters
+        ----------
+        input : `DiscreteInputsAgc150` | `InputRegistersAgc150`
+            The modbus input.
+        modbus_response_array : `list[int | bool]`
+            The array of values read from the modbus client.
+        """
+        if modbus_response_array and len(modbus_response_array) > 0:
+            self._save_field(input.name, modbus_response_array[0])
+        else:
+            self.log.debug(
+                f"Input register {input.name}({input.value}) returned no data."
+            )
+
+    def _save_field(self, input_name: str, read_value: int | bool) -> None:
         """Process and store the value read from the modbus client.
 
         Parameters
         ----------
-        field_name : `str`
-            The field name.
+        input_name : `str`
+            The modbus input name.
         read_value : `int` | `bool`
             The value read from the modbus client.
         """
+        field_name = self._get_xml_field_name(input_name)
         processed_value = self._process_modbus_value(
             field_name,
             read_value,
         )
         field = self.agc150_fields.get(field_name)
         if field is not None and isinstance(field, list):
-            field.append(processed_value)
+            index = ARRAY_FIELDS_AGC150[field_name].index(input_name)
+            field[index] = processed_value
         else:
             self.agc150_fields[field_name] = processed_value
 
@@ -202,12 +222,13 @@ class ModbusAgc150Connector(BaseModbusConnector):
         """
         if self.connected:
             for discrete_input in DiscreteInputsAgc150:
-                field_name = self._get_xml_field_name(discrete_input.name)
                 response = await self.client.read_discrete_inputs(
                     address=discrete_input.value, count=1
                 )
-                read_value = response.bits[0]
-                self._save_field(field_name, read_value)
+                self._process_modbus_response_array(
+                    discrete_input,
+                    response.bits,
+                )
         else:
             raise RuntimeError("AGC150 connector is not connected.")
 
@@ -221,12 +242,13 @@ class ModbusAgc150Connector(BaseModbusConnector):
         """
         if self.connected:
             for input_register in InputRegistersAgc150:
-                field_name = self._get_xml_field_name(input_register.name)
                 response = await self.client.read_input_registers(
                     address=input_register.value, count=1
                 )
-                read_value = response.registers[0]
-                self._save_field(field_name, read_value)
+                self._process_modbus_response_array(
+                    input_register,
+                    response.registers,
+                )
         else:
             raise RuntimeError("AGC150 connector is not connected")
 
@@ -244,7 +266,10 @@ class ModbusAgc150Connector(BaseModbusConnector):
         """
         if self.connected:
             for array_field in ARRAY_FIELDS_AGC150:
-                self.agc150_fields[array_field] = []
+                array_field_size = len(ARRAY_FIELDS_AGC150[array_field])
+                self.agc150_fields[array_field] = [
+                    None for _ in range(array_field_size)
+                ]
             await self._read_discrete_inputs()
             await self._read_input_registers()
             await self.tel_agcGenset150.set_write(**self.agc150_fields)

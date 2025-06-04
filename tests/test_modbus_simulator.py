@@ -19,30 +19,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+import unittest
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from lsst.ts.ess.epm.modbus_simulator import ModbusSimulator
 
 
-@pytest.mark.asyncio
-async def test_start() -> None:
-    """Test the start method of ModbusSimulator."""
-    with patch("lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer") as MockServer:
-        # Mock the ModbusSimulatorServer
-        mock_server_instance = MockServer.return_value
-        mock_server_instance.run_forever = AsyncMock()
+class ModbusSimulatorTestCase(unittest.IsolatedAsyncioTestCase):
+    async def test_start(self) -> None:
+        """Test the start method of ModbusSimulator."""
+        with patch(
+            "lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer"
+        ) as MockServer:
+            # Mock the ModbusSimulatorServer
+            mock_server_instance = MockServer.return_value
+            mock_server_instance.run_forever = AsyncMock()
 
-        # Create an instance of ModbusSimulator
-        simulator = ModbusSimulator(
-            host="127.0.0.1",
-            port=502,
-            modbus_server="test_server",
-            modbus_device="test_device",
-        )
+            # Create an instance of ModbusSimulator
+            log = logging.getLogger(type(self).__name__)
+            simulator = ModbusSimulator(
+                log=log,
+                host="127.0.0.1",
+                port=502,
+                modbus_server="test_server",
+                modbus_device="test_device",
+            )
 
-        # Call the start method
-        await simulator.start()
+            # Call the start method
+            await simulator.start()
 
-        # Assert that run_forever was called with the correct arguments
-        mock_server_instance.run_forever.assert_called_once_with(only_start=True)
+            # Assert that run_forever was called with the correct arguments
+            mock_server_instance.run_forever.assert_called_once_with(only_start=True)

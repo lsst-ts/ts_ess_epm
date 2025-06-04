@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 
 from pymodbus.server import ModbusSimulatorServer
@@ -47,23 +48,29 @@ class ModbusSimulator:
 
     def __init__(
         self,
+        log: logging.Logger,
         host: str = "0.0.0.0",
         port: int = 502,
         modbus_server: str = "server",
         modbus_device: str = "device",
     ) -> None:
+        self.log = log.getChild(type(self).__name__)
         self.host = host
         self.port = port
         self.server = ModbusSimulatorServer(
             modbus_server=modbus_server,
             modbus_device=modbus_device,
+            http_host=None,
+            http_port=None,
             json_file=MODBUS_SIMULATOR_SETUP,
         )
 
     async def start(self) -> None:
         """Start the modbus server."""
+        self.log.info(f"Starting modbus simulator server on {self.host}:{self.port}.")
         await self.server.run_forever(only_start=True)
 
     async def stop(self) -> None:
         """Stop the modbus server."""
+        self.log.info("Stopping modbus simulator server.")
         await self.server.stop()

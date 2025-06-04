@@ -22,7 +22,6 @@
 import logging
 import types
 import unittest
-from unittest.mock import AsyncMock, Mock
 
 from lsst.ts import salobj
 from lsst.ts.ess.epm.modbus_agc150_connector import ModbusAgc150Connector
@@ -44,11 +43,16 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             )
             log = logging.getLogger(type(self).__name__)
             self.modbus_agc150_connector = ModbusAgc150Connector(
-                config=config, topics=topics, log=log
+                config=config,
+                topics=topics,
+                log=log,
+                simulation_mode=1,
             )
             assert self.modbus_agc150_connector is not None
             await self.modbus_agc150_connector.connect()
+            assert self.modbus_agc150_connector.connected
             await self.modbus_agc150_connector.disconnect()
+            assert not self.modbus_agc150_connector.connected
 
     async def test_process_telemetry(self) -> None:
         salobj.set_test_topic_subname()
@@ -65,19 +69,13 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             )
             log = logging.getLogger(type(self).__name__)
             self.modbus_agc150_connector = ModbusAgc150Connector(
-                config=config, topics=topics, log=log
+                config=config,
+                topics=topics,
+                log=log,
+                simulation_mode=1,
             )
             await self.modbus_agc150_connector.connect()
-
-            # Mock the client and its responses
-            self.modbus_agc150_connector.client = AsyncMock()
-            self.modbus_agc150_connector.client.close = Mock()
-            self.modbus_agc150_connector.client.read_discrete_inputs.return_value = (
-                Mock(bits=[True])
-            )
-            self.modbus_agc150_connector.client.read_input_registers.return_value = (
-                Mock(registers=[12345])
-            )
+            assert self.modbus_agc150_connector.connected
 
             # Call process_telemetry and verify behavior
             await self.modbus_agc150_connector.process_telemetry()
@@ -87,6 +85,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(topics.tel_agcGenset150.has_data)
 
             await self.modbus_agc150_connector.disconnect()
+            assert not self.modbus_agc150_connector.connected
 
     async def test_read_discrete_inputs_not_connected(self) -> None:
         salobj.set_test_topic_subname()

@@ -43,9 +43,11 @@ class ModbusDataClientTestCase(unittest.IsolatedAsyncioTestCase):
             )
             log = logging.getLogger(type(self).__name__)
             self.modbus_data_client = modbus_data_client.ModbusDataClient(
-                config=config, topics=topics, log=log
+                config=config, topics=topics, log=log, simulation_mode=1
             )
             assert self.modbus_data_client is not None
             assert self.modbus_data_client.modbus_connector is not None
             await self.modbus_data_client.connect()
+            assert self.modbus_data_client.modbus_connector.connected
             await self.modbus_data_client.disconnect()
+            assert not self.modbus_data_client.modbus_connector.connected

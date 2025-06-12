@@ -8,6 +8,15 @@ Version History
 
 .. towncrier release notes start
 
+v0.4.0 (2025-06-12)
+===================
+
+Performance Enhancement
+-----------------------
+
+- Forced always to reconnect. (`DM-50895 <https://rubinobs.atlassian.net//browse/DM-50895>`_)
+
+
 v0.3.1 (2025-06-04)
 ===================
 

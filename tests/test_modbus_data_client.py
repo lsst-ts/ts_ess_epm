@@ -38,6 +38,7 @@ class ModbusDataClientTestCase(unittest.IsolatedAsyncioTestCase):
                 host="127.0.0.1",
                 port=502,
                 max_read_timeouts=5,
+                connect_timeout=1,
                 device_name="UnitTest",
                 device_type="agc150genset",
             )

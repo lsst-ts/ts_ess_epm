@@ -151,6 +151,10 @@ properties:
     description: Maximum number of read timeouts before an exception is raised.
     type: integer
     default: 5
+  connect_timeout:
+    description: Timeout for connecting to the TCP/IP interface (sec).
+    type: number
+    default: 60.0
   device_name:
     description: The name of the device.
     type: string
@@ -174,6 +178,7 @@ required:
   - host
   - port
   - max_read_timeouts
+  - connect_timeout
   - device_name
   - device_type
   - poll_interval

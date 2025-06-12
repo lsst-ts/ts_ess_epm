@@ -67,14 +67,12 @@ class ModbusDataClient(BaseReadLoopDataClient):
         topics: salobj.Controller | types.SimpleNamespace,
         log: logging.Logger,
         simulation_mode: int = 0,
-        auto_reconnect: bool = False,
     ) -> None:
         super().__init__(
             config=config,
             topics=topics,
             log=log,
             simulation_mode=simulation_mode,
-            auto_reconnect=auto_reconnect,
         )
 
         connector_class_path = ModbusConnectors[config.device_type].value
@@ -106,6 +104,10 @@ properties:
     description: Maximum number of read timeouts before an exception is raised.
     type: integer
     default: 5
+  connect_timeout:
+    description: Timeout for connecting to the TCP/IP interface (sec).
+    type: number
+    default: 60.0
   device_name:
     description: The name of the device.
     type: string
@@ -116,6 +118,7 @@ required:
   - host
   - port
   - max_read_timeouts
+  - connect_timeout
   - device_name
   - device_type
 additionalProperties: false

@@ -189,28 +189,20 @@ class SnmpServerSimulator:
         """
         oid = self.mib_tree_holder.mib_tree[elt].oid
 
-        if oid.startswith(
-            self.mib_tree_holder.mib_tree[DeviceName.netbooter.value].oid
-        ):
+        if oid.startswith(self.mib_tree_holder.mib_tree[DeviceName.netbooter.value].oid):
             # Handle PDU indexed items.
             for i in range(PDU_LIST_START_OID, PDU_LIST_START_OID + PDU_LIST_NUM_OIDS):
                 self._append_random_value(oid + f".{i}", elt)
         elif oid.startswith(self.mib_tree_holder.mib_tree[DeviceName.xups.value].oid):
             # Handle XUPS indexed items.
-            for i in range(
-                XUPS_LIST_START_OID, XUPS_LIST_START_OID + XUPS_LIST_NUM_OIDS
-            ):
+            for i in range(XUPS_LIST_START_OID, XUPS_LIST_START_OID + XUPS_LIST_NUM_OIDS):
                 self._append_random_value(oid + f".{i}", elt)
-        elif oid.startswith(
-            self.mib_tree_holder.mib_tree[DeviceName.raritan.value].oid
-        ):
+        elif oid.startswith(self.mib_tree_holder.mib_tree[DeviceName.raritan.value].oid):
             self._handle_raritan_indexed_item(elt)
         else:
             self.log.warning(f"Unexpected list item for {oid=!r}.")
             # Handle all other indexed items.
-            for i in range(
-                MISC_LIST_START_OID, MISC_LIST_START_OID + MISC_LIST_NUM_OIDS
-            ):
+            for i in range(MISC_LIST_START_OID, MISC_LIST_START_OID + MISC_LIST_NUM_OIDS):
                 self._append_random_value(oid + f".{i}", elt)
 
     def _append_random_value(self, oid: str, elt: str) -> None:
@@ -234,9 +226,7 @@ class SnmpServerSimulator:
                 value = self._generate_string(oid)
             case _:
                 value = Integer(0)
-                self.log.error(
-                    f"Unknown telemetry item type {TelemetryItemType[elt]} for {elt=}"
-                )
+                self.log.error(f"Unknown telemetry item type {TelemetryItemType[elt]} for {elt=}")
         self._append_value(oid, value)
 
     def _append_value(self, oid: str, value: Integer | OctetString) -> None:
@@ -250,9 +240,7 @@ class SnmpServerSimulator:
         value : `Integer` | `OctetString`
             The value to append.
         """
-        self.snmp_items.append(
-            (None, Integer(0), Integer(0), [(ObjectName(value=oid), value)])
-        )
+        self.snmp_items.append((None, Integer(0), Integer(0), [(ObjectName(value=oid), value)]))
 
     def _generate_integer(self, oid: str, start: int, stop: int) -> Integer:
         """Generate an Integer value in the specified range.
@@ -287,9 +275,7 @@ class SnmpServerSimulator:
         Integer | OctetString
             An SNMP Integer or OctetString object.
         """
-        if oid.startswith(
-            self.mib_tree_holder.mib_tree[DeviceName.netbooter.value].oid
-        ):
+        if oid.startswith(self.mib_tree_holder.mib_tree[DeviceName.netbooter.value].oid):
             value = self._generate_netbooter_float(oid)
         elif oid in FREQUENCY_OID_LIST:
             value = Integer(FIFTY_HZ_IN_TENS)
@@ -314,20 +300,14 @@ class SnmpServerSimulator:
         OctetString
             An SNMP OctetString object.
         """
-        return OctetString(
-            value="".join(random.choices(string.ascii_uppercase + string.digits, k=20))
-        )
+        return OctetString(value="".join(random.choices(string.ascii_uppercase + string.digits, k=20)))
 
     def _generate_netbooter_float(self, oid: str) -> Integer | OctetString:
         # Certain Netbooter values are floats encoded as hexadecimal strings of
         # the format "0x<hex value>00".
         if oid in PDU_HEX_OID_LIST:
             float_value = round(random.uniform(0.0, 10.0), 2)
-            hex_string = (
-                "0x"
-                + "".join([format(ord(c), "x") for c in f"{float_value:0.2f}"])
-                + "00"
-            )
+            hex_string = "0x" + "".join([format(ord(c), "x") for c in f"{float_value:0.2f}"]) + "00"
             return OctetString(value=hex_string)
         else:
             return self._generate_integer(oid, 100, 1000)
@@ -355,9 +335,7 @@ class SnmpServerSimulator:
             case RaritanOid.OutletDecimalDigits:
                 self._generate_raritan_decimal_digits(RARITAN_OUTLET_DECIMAL_DIGITS, 48)
             case RaritanOid.ExternalSensorDecimalDigits:
-                self._generate_raritan_decimal_digits(
-                    RARITAN_EXT_SENS_DECIMAL_DIGITS, 1
-                )
+                self._generate_raritan_decimal_digits(RARITAN_EXT_SENS_DECIMAL_DIGITS, 1)
             case RaritanOid.InletTelemetry:
                 self._generate_raritan_inlet_telemetry()
             case RaritanOid.OutletTelemetry:
@@ -367,9 +345,7 @@ class SnmpServerSimulator:
             case _:
                 self.log.warning(f"Unknown Raritan {oid=!r}. Ignoring.")
 
-    def _generate_raritan_decimal_digits(
-        self, digits_template: dict[str, int], num_items: int
-    ) -> None:
+    def _generate_raritan_decimal_digits(self, digits_template: dict[str, int], num_items: int) -> None:
         """Generic method to generate Raritan decimal digits replies.
 
         For the outlet decimal digits reply, the same values need to be
@@ -387,9 +363,7 @@ class SnmpServerSimulator:
         """
         for num_item in range(1, num_items + 1):
             for iid in digits_template:
-                self._append_value(
-                    f"{iid.format(item_id=num_item)}", Integer(digits_template[iid])
-                )
+                self._append_value(f"{iid.format(item_id=num_item)}", Integer(digits_template[iid]))
 
     def _generate_raritan_inlet_telemetry(self) -> None:
         """Helper method to generate Raritan inlet telemetry."""

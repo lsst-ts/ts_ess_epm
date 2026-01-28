@@ -26,8 +26,9 @@ import logging
 import types
 from typing import Union
 
-from lsst.ts import salobj
 from pymodbus.client import AsyncModbusTcpClient
+
+from lsst.ts import salobj
 
 from .base_modbus_connector import BaseModbusConnector
 from .enums import (
@@ -74,9 +75,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
     ) -> None:
         self.topics = topics
         self.simulator = (
-            ModbusSimulator(log=log, modbus_device=config.device_type)
-            if simulation_mode == 1
-            else None
+            ModbusSimulator(log=log, modbus_device=config.device_type) if simulation_mode == 1 else None
         )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port
@@ -155,9 +154,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
             return value
 
         signed_value = value if value < 32768 else value - 65536
-        decimal_factor = InputRegistersAgc150DecimalFactor[
-            self._get_xml_field_name(field)
-        ].value
+        decimal_factor = InputRegistersAgc150DecimalFactor[self._get_xml_field_name(field)].value
         if decimal_factor == 0:
             return signed_value
 
@@ -180,9 +177,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
         if modbus_response_array and len(modbus_response_array) > 0:
             self._save_field(input.name, modbus_response_array[0])
         else:
-            self.log.debug(
-                f"Input register {input.name}({input.value}) returned no data."
-            )
+            self.log.debug(f"Input register {input.name}({input.value}) returned no data.")
 
     def _save_field(self, input_name: str, read_value: int | bool) -> None:
         """Process and store the value read from the modbus client.
@@ -222,9 +217,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
         """
         if self.connected:
             for discrete_input in DiscreteInputsAgc150:
-                response = await self.client.read_discrete_inputs(
-                    address=discrete_input.value, count=1
-                )
+                response = await self.client.read_discrete_inputs(address=discrete_input.value, count=1)
                 self._process_modbus_response_array(
                     discrete_input,
                     response.bits,
@@ -242,9 +235,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
         """
         if self.connected:
             for input_register in InputRegistersAgc150:
-                response = await self.client.read_input_registers(
-                    address=input_register.value, count=1
-                )
+                response = await self.client.read_input_registers(address=input_register.value, count=1)
                 self._process_modbus_response_array(
                     input_register,
                     response.registers,
@@ -267,9 +258,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
         if self.connected:
             for array_field in ARRAY_FIELDS_AGC150:
                 array_field_size = len(ARRAY_FIELDS_AGC150[array_field])
-                self.agc150_fields[array_field] = [
-                    None for _ in range(array_field_size)
-                ]
+                self.agc150_fields[array_field] = [None for _ in range(array_field_size)]
             await self._read_discrete_inputs()
             await self._read_input_registers()
             await self.tel_agcGenset150.set_write(**self.agc150_fields)

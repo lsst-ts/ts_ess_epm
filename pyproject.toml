@@ -7,7 +7,7 @@ name = "ts_ess_epm"
 description = "Complementary package to the ts_ess_common package for reading telemetries from devices for electric power management."
 license = { text = "GPL" }
 classifiers = ["Programming Language :: Python :: 3"]
-urls = { documentation = "https://ts-ess-epm.lsst.io", repository = "https://github.com/lsst-ts/ts_ess_epm" }
+urls = { documentation = "https://ts-ess-epm.lsst.io", source_code = "https://github.com/lsst-ts/ts_ess_epm" }
 dynamic = ["version"]
 dependencies = ["pymodbus"]
 

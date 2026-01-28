@@ -46,8 +46,6 @@ class MibTreeTestCase(unittest.IsolatedAsyncioTestCase):
         assert len(enterprises_children) == 0
 
         assert epm.DeviceName.xups.value in mib_tree_holder.mib_tree
-        assert (
-            mib_tree_holder.mib_tree[epm.DeviceName.xups.value].parent.name == "eaton"
-        )
+        assert mib_tree_holder.mib_tree[epm.DeviceName.xups.value].parent.name == "eaton"
 
         assert len(mib_tree_holder.pending_modules) == 0

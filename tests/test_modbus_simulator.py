@@ -29,9 +29,7 @@ from lsst.ts.ess.epm.modbus_simulator import ModbusSimulator
 class ModbusSimulatorTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_start(self) -> None:
         """Test the start method of ModbusSimulator."""
-        with patch(
-            "lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer"
-        ) as MockServer:
+        with patch("lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer") as MockServer:
             # Mock the ModbusSimulatorServer
             mock_server_instance = MockServer.return_value
             mock_server_instance.run_forever = AsyncMock()

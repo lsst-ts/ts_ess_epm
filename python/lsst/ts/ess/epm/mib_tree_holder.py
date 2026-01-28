@@ -128,9 +128,7 @@ class MibTreeHolder:
                 elif obj_type_match:
                     self._process_obj_type(lines, line, obj_type_match)
 
-    def _process_mod_id(
-        self, lines: list[str], line: str, mod_id_match: re.Match
-    ) -> None:
+    def _process_mod_id(self, lines: list[str], line: str, mod_id_match: re.Match) -> None:
         """Utility method to process MODULE-IDENTITY entries.
 
         If the parent exists the module gets added as a branch. If the parent
@@ -245,9 +243,7 @@ class MibTreeHolder:
             name_replacement = DeviceName.xups.value
         return name_replacement
 
-    def _process_obj_type(
-        self, lines: list[str], line: str, obj_type_match: re.Match
-    ) -> None:
+    def _process_obj_type(self, lines: list[str], line: str, obj_type_match: re.Match) -> None:
         """Utility method to process OBJECT_TYPE entries.
 
         Parameters

@@ -76,13 +76,9 @@ class SnmpDataClientTestCase(unittest.IsolatedAsyncioTestCase):
 
             if device_type == epm.DeviceName.raritan.value:
                 for topic_name in ADDITIONAL_TOPICS_NUM_CALLS:
-                    await self.assert_set_write(
-                        topic_name, ADDITIONAL_TOPICS_NUM_CALLS[topic_name]
-                    )
+                    await self.assert_set_write(topic_name, ADDITIONAL_TOPICS_NUM_CALLS[topic_name])
 
-    async def mock_data_type(
-        self, component_info: ComponentInfo, topic_name: str
-    ) -> types.SimpleNamespace:
+    async def mock_data_type(self, component_info: ComponentInfo, topic_name: str) -> types.SimpleNamespace:
         """Mock the DataType of a telemetry topic.
 
         Parameters

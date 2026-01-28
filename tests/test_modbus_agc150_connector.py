@@ -101,9 +101,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(
-                config=config, topics=topics, log=log
-            )
+            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
 
             with self.assertRaises(RuntimeError):
                 await self.modbus_agc150_connector._read_discrete_inputs()
@@ -122,9 +120,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(
-                config=config, topics=topics, log=log
-            )
+            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
 
             with self.assertRaises(RuntimeError):
                 await self.modbus_agc150_connector._read_input_registers()
@@ -143,9 +139,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(
-                config=config, topics=topics, log=log
-            )
+            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
 
             with self.assertRaises(RuntimeError):
                 await self.modbus_agc150_connector.process_telemetry()

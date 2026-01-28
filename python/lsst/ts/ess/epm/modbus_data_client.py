@@ -27,6 +27,7 @@ import typing
 from typing import Type
 
 import yaml
+
 from lsst.ts import salobj
 from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 

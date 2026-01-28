@@ -23,8 +23,9 @@ import logging
 import types
 from abc import ABC, abstractmethod
 
-from lsst.ts import salobj
 from pymodbus.client import AsyncModbusTcpClient
+
+from lsst.ts import salobj
 
 
 class BaseModbusConnector(ABC):

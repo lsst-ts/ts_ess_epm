@@ -31,8 +31,6 @@ import types
 import typing
 
 import yaml
-from lsst.ts import utils
-from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 from pysnmp.hlapi.v3arch.asyncio import (
     CommunityData,
     ContextData,
@@ -40,11 +38,13 @@ from pysnmp.hlapi.v3arch.asyncio import (
     ObjectType,
     SnmpEngine,
     UdpTransportTarget,
+    walk_cmd,
 )
-from pysnmp.hlapi.v3arch.asyncio import walk_cmd
+
+from lsst.ts import utils
+from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 
 from ..mib_tree_holder import MibTreeHolder
-from ..snmp_server_simulator import SnmpServerSimulator
 from ..mib_utils import (
     FREQUENCY_OID_LIST,
     RARITAN_EXT_SENS_DEC_DIGITS_IDS,
@@ -54,15 +54,14 @@ from ..mib_utils import (
     TelemetryItemName,
     TelemetryItemType,
 )
+from ..snmp_server_simulator import SnmpServerSimulator
 
 if typing.TYPE_CHECKING:
     from lsst.ts import salobj
 
 hex_const_pattern = r"([a-zA-Z0-9]*)"
 hx = re.compile(hex_const_pattern)
-numeric_const_pattern = (
-    r"[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?"
-)
+numeric_const_pattern = r"[-+]? (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?"
 rx = re.compile(numeric_const_pattern, re.VERBOSE)
 
 
@@ -117,9 +116,7 @@ class SnmpDataClient(BaseReadLoopDataClient):
         # Some SNMP devices emit a LOT of telemetry. Therefore, the code loops
         # over one of more ObjectType instances to limit the amount of
         # telemetry items that get queried.
-        self.object_types = [
-            ObjectType(ObjectIdentity(self.mib_tree_holder.mib_tree["system"].oid))
-        ]
+        self.object_types = [ObjectType(ObjectIdentity(self.mib_tree_holder.mib_tree["system"].oid))]
 
         # Keep track of the walk_cmd function so we can override it when in
         # simulation mode.
@@ -228,9 +225,7 @@ additionalProperties: false
         """
         self.object_types = [
             ObjectType(ObjectIdentity(raritan_oid))
-            for raritan_oid in [
-                roid.value for roid in RaritanOid if "DecimalDigits" in roid.name
-            ]
+            for raritan_oid in [roid.value for roid in RaritanOid if "DecimalDigits" in roid.name]
         ]
         await self.execute_walk_cmd()
 
@@ -243,16 +238,12 @@ additionalProperties: false
                 # The numbering of the externsl sensor items differs from the
                 # numbering of the other items so some additional code is
                 # needed.
-                await self._get_raritan_external_sensor_decimal_digits(
-                    snmp_result_oid, item_id
-                )
+                await self._get_raritan_external_sensor_decimal_digits(snmp_result_oid, item_id)
             else:
                 # The rest of the items use the same nunbering.
                 await self._get_raritan_misc_decimal_digits(snmp_result_oid, item_id)
 
-    async def _get_raritan_external_sensor_decimal_digits(
-        self, result: str, item_id: int
-    ) -> None:
+    async def _get_raritan_external_sensor_decimal_digits(self, result: str, item_id: int) -> None:
         """Helper method to get the Raritan decimal digits for external
         sensors."""
         # Each external sensor item has 2 values so a list is needed.
@@ -270,9 +261,7 @@ additionalProperties: false
         raritan_item = f"{item_name[0].upper()}{item_name[1:]}"
         if result.startswith(RaritanOid.InletDecimalDigits.value):
             # Each inlet item only has one value.
-            self.raritan_decimal_digits[f"inlet{raritan_item}"] = int(
-                self.snmp_result[result]
-            )
+            self.raritan_decimal_digits[f"inlet{raritan_item}"] = int(self.snmp_result[result])
         elif result.startswith(RaritanOid.OutletDecimalDigits.value):
             # Each outlet item has 48 values so a list is needed.
             raritan_item = f"outlet{raritan_item}"
@@ -293,17 +282,11 @@ additionalProperties: false
                 # since the decimal digits were queried in `setup_reading`.
                 self.object_types = [
                     ObjectType(ObjectIdentity(raritan_oid))
-                    for raritan_oid in [
-                        roid.value for roid in RaritanOid if "Telemetry" in roid.name
-                    ]
+                    for raritan_oid in [roid.value for roid in RaritanOid if "Telemetry" in roid.name]
                 ]
             else:
                 self.object_types = [
-                    ObjectType(
-                        ObjectIdentity(
-                            self.mib_tree_holder.mib_tree[self.device_type].oid
-                        )
-                    )
+                    ObjectType(ObjectIdentity(self.mib_tree_holder.mib_tree[self.device_type].oid))
                 ]
         else:
             raise ValueError(f"Unknown device type {self.device_type!r}. Ignoring.")
@@ -367,26 +350,20 @@ additionalProperties: false
         assert parent is not None
 
         snmp_value: typing.Any
-        if parent.index and await self._is_single_or_multiple(
-            telemetry_item, telemetry_topic
-        ):
+        if parent.index and await self._is_single_or_multiple(telemetry_item, telemetry_topic):
             mib_oid = self.mib_tree_holder.mib_tree[mib_name].oid
             snmp_value = []
             for snmp_result_oid in self.snmp_result:
                 if snmp_result_oid.startswith(mib_oid):
                     snmp_value.append(
-                        await self.get_telemetry_item_value(
-                            telemetry_item, mib_name, snmp_result_oid
-                        )
+                        await self.get_telemetry_item_value(telemetry_item, mib_name, snmp_result_oid)
                     )
         else:
             if self.mib_tree_holder.mib_tree[mib_name].oid + ".0" in self.snmp_result:
                 mib_oid = self.mib_tree_holder.mib_tree[mib_name].oid + ".0"
             else:
                 mib_oid = self.mib_tree_holder.mib_tree[mib_name].oid + ".1"
-            snmp_value = await self.get_telemetry_item_value(
-                telemetry_item, mib_name, mib_oid
-            )
+            snmp_value = await self.get_telemetry_item_value(telemetry_item, mib_name, mib_oid)
 
             # Some frequencies are given in tens of Hertz.
             if mib_oid in FREQUENCY_OID_LIST:
@@ -394,9 +371,7 @@ additionalProperties: false
 
         telemetry_dict[telemetry_item] = snmp_value
 
-    async def process_telemetry_item_for_raritan_device(
-        self, telemetry_dict: dict[str, typing.Any]
-    ) -> None:
+    async def process_telemetry_item_for_raritan_device(self, telemetry_dict: dict[str, typing.Any]) -> None:
         """Process the SNMP telemetry of a Raritan device.
 
         Raritan devices have a very generic MIB file and a configurable amount
@@ -414,9 +389,7 @@ additionalProperties: false
         await self._process_raritan_outlet_telemetry(telemetry_dict)
         await self._process_raritan_external_sensor_telemetry()
 
-    async def _process_raritan_inlet_telemetry(
-        self, telemetry_dict: dict[str, typing.Any]
-    ) -> None:
+    async def _process_raritan_inlet_telemetry(self, telemetry_dict: dict[str, typing.Any]) -> None:
         """Process the SNMP telemetry of a Raritan inlet."""
         for snmp_result_oid in self.snmp_result:
             if snmp_result_oid.startswith(RaritanOid.InletTelemetry):
@@ -425,13 +398,9 @@ additionalProperties: false
                 raritan_item = f"inlet{item_name[0].upper()}{item_name[1:]}"
                 decimal_digits = self.raritan_decimal_digits[raritan_item]
                 assert isinstance(decimal_digits, int)
-                telemetry_dict[raritan_item] = (
-                    int(self.snmp_result[snmp_result_oid]) / 10**decimal_digits
-                )
+                telemetry_dict[raritan_item] = int(self.snmp_result[snmp_result_oid]) / 10**decimal_digits
 
-    async def _process_raritan_outlet_telemetry(
-        self, telemetry_dict: dict[str, typing.Any]
-    ) -> None:
+    async def _process_raritan_outlet_telemetry(self, telemetry_dict: dict[str, typing.Any]) -> None:
         """Process the SNMP telemetry of Raritan outlets."""
         for snmp_result_oid in self.snmp_result:
             if snmp_result_oid.startswith(RaritanOid.OutletTelemetry):
@@ -468,14 +437,12 @@ additionalProperties: false
                 assert isinstance(decimal_digits, list)
                 if item_name == RaritanItemId.temperature.name:
                     temperatures[temp_index] = (
-                        int(self.snmp_result[snmp_result_oid])
-                        / 10 ** decimal_digits[temp_index]
+                        int(self.snmp_result[snmp_result_oid]) / 10 ** decimal_digits[temp_index]
                     )
                     temp_index += 1
                 elif item_name == RaritanItemId.humidity.name:
                     relative_humidities[rel_hum_idex] = (
-                        int(self.snmp_result[snmp_result_oid])
-                        / 10 ** decimal_digits[rel_hum_idex]
+                        int(self.snmp_result[snmp_result_oid]) / 10 ** decimal_digits[rel_hum_idex]
                     )
                     rel_hum_idex += 1
 
@@ -523,19 +490,14 @@ additionalProperties: false
             if hasattr(field_info, "count"):
                 is_list = telemetry_topic.metadata.field_info[telemetry_item].count > 1
             else:
-                is_list = (
-                    telemetry_topic.metadata.field_info[telemetry_item].array_length
-                    is not None
-                )
+                is_list = telemetry_topic.metadata.field_info[telemetry_item].array_length is not None
         elif hasattr(telemetry_topic, "topic_info"):
             is_list = telemetry_topic.topic_info.fields[telemetry_item].count > 1
         else:
             is_list = False
         return is_list
 
-    async def get_telemetry_item_value(
-        self, telemetry_item: str, mib_name: str, mib_oid: str
-    ) -> typing.Any:
+    async def get_telemetry_item_value(self, telemetry_item: str, mib_name: str, mib_oid: str) -> typing.Any:
         """Get the value of a telemetry item.
 
         Parameters
@@ -565,30 +527,19 @@ additionalProperties: false
                     snmp_value = int(self.snmp_result[mib_oid])
                 else:
                     snmp_value = 0
-                    self.log.debug(
-                        f"Could not find {mib_oid=} for int {telemetry_item=}. "
-                        "Ignoring."
-                    )
+                    self.log.debug(f"Could not find {mib_oid=} for int {telemetry_item=}. Ignoring.")
             case "float":
                 if mib_oid in self.snmp_result:
-                    snmp_value = await self._extract_float_from_string(
-                        self.snmp_result[mib_oid]
-                    )
+                    snmp_value = await self._extract_float_from_string(self.snmp_result[mib_oid])
                 else:
                     snmp_value = math.nan
-                    self.log.debug(
-                        f"Could not find {mib_oid=} for float {telemetry_item=}. "
-                        "Ignoring."
-                    )
+                    self.log.debug(f"Could not find {mib_oid=} for float {telemetry_item=}. Ignoring.")
             case "string":
                 if mib_oid in self.snmp_result:
                     snmp_value = self.snmp_result[mib_oid]
                 else:
                     snmp_value = ""
-                    self.log.debug(
-                        f"Could not find {mib_oid=} for str {telemetry_item=}. "
-                        "Ignoring."
-                    )
+                    self.log.debug(f"Could not find {mib_oid=} for str {telemetry_item=}. Ignoring.")
             case _:
                 snmp_value = self.snmp_result[mib_oid]
         return snmp_value
@@ -642,9 +593,7 @@ additionalProperties: false
         self.snmp_result = {}
 
         if self.transport_target is None:
-            self.transport_target = await UdpTransportTarget.create(
-                (self.config.host, self.config.port)
-            )
+            self.transport_target = await UdpTransportTarget.create((self.config.host, self.config.port))
 
         for object_type in self.object_types:
             iterator = self.walk_cmd(
@@ -674,6 +623,4 @@ additionalProperties: false
                     raise RuntimeError(msg)
                 else:
                     for var_bind in var_binds:
-                        self.snmp_result[var_bind[0].prettyPrint()] = var_bind[
-                            1
-                        ].prettyPrint()
+                        self.snmp_result[var_bind[0].prettyPrint()] = var_bind[1].prettyPrint()

@@ -8,6 +8,15 @@ Version History
 
 .. towncrier release notes start
 
+v0.4.2 (2026-02-09)
+===================
+
+Bug Fixes
+---------
+
+- Made simulation mode work for the SnmpDataClient. (`OSW-1799 <https://rubinobs.atlassian.net//browse/OSW-1799>`_)
+
+
 v0.4.1 (2026-01-28)
 ===================
 

@@ -126,6 +126,7 @@ class SnmpDataClient(BaseReadLoopDataClient):
         self.snmp_result: dict[str, str] = {}
         self.system_description = "No system description set."
         self.raritan_decimal_digits: dict[str, int | list[int]] = {}
+        self.mib_to_ignore: set[str] = set()
 
     @classmethod
     def get_config_schema(cls) -> dict[str, typing.Any]:
@@ -200,6 +201,7 @@ additionalProperties: false
         if self.simulation_mode == 1:
             snmp_server_simulator = SnmpServerSimulator(log=self.log)
             self.walk_cmd = snmp_server_simulator.snmp_cmd
+            self.config.host = "localhost"
 
         await self.execute_walk_cmd()
 
@@ -527,19 +529,25 @@ additionalProperties: false
                     snmp_value = int(self.snmp_result[mib_oid])
                 else:
                     snmp_value = 0
-                    self.log.debug(f"Could not find {mib_oid=} for int {telemetry_item=}. Ignoring.")
+                    if mib_oid not in self.mib_to_ignore:
+                        self.mib_to_ignore.add(mib_oid)
+                        self.log.debug(f"Could not find {mib_oid=} for int {telemetry_item=}. Ignoring.")
             case "float":
                 if mib_oid in self.snmp_result:
                     snmp_value = await self._extract_float_from_string(self.snmp_result[mib_oid])
                 else:
                     snmp_value = math.nan
-                    self.log.debug(f"Could not find {mib_oid=} for float {telemetry_item=}. Ignoring.")
+                    if mib_oid not in self.mib_to_ignore:
+                        self.mib_to_ignore.add(mib_oid)
+                        self.log.debug(f"Could not find {mib_oid=} for float {telemetry_item=}. Ignoring.")
             case "string":
                 if mib_oid in self.snmp_result:
                     snmp_value = self.snmp_result[mib_oid]
                 else:
                     snmp_value = ""
-                    self.log.debug(f"Could not find {mib_oid=} for str {telemetry_item=}. Ignoring.")
+                    if mib_oid not in self.mib_to_ignore:
+                        self.mib_to_ignore.add(mib_oid)
+                        self.log.debug(f"Could not find {mib_oid=} for str {telemetry_item=}. Ignoring.")
             case _:
                 snmp_value = self.snmp_result[mib_oid]
         return snmp_value
@@ -593,6 +601,7 @@ additionalProperties: false
         self.snmp_result = {}
 
         if self.transport_target is None:
+            self.log.info(f"Connecting to host={self.config.host}.")
             self.transport_target = await UdpTransportTarget.create((self.config.host, self.config.port))
 
         for object_type in self.object_types:

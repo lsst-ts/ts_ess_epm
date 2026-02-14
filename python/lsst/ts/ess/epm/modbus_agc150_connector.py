@@ -73,14 +73,12 @@ class ModbusAgc150Connector(BaseModbusConnector):
         log: logging.Logger,
         simulation_mode: int = 0,
     ) -> None:
-        self.topics = topics
+        super().__init__(config, topics, log, simulation_mode)
         self.simulator = (
             ModbusSimulator(log=log, modbus_device=config.device_type) if simulation_mode == 1 else None
         )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port
-        self.log = log.getChild(type(self).__name__)
-        self.client: AsyncModbusTcpClient = None
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
         self.agc150_fields: dict[str, FieldValueType] = {}
 
@@ -261,6 +259,7 @@ class ModbusAgc150Connector(BaseModbusConnector):
                 self.agc150_fields[array_field] = [None for _ in range(array_field_size)]
             await self._read_discrete_inputs()
             await self._read_input_registers()
+            self.log.debug(f"{self.agc150_fields=}")
             await self.tel_agcGenset150.set_write(**self.agc150_fields)
             await asyncio.sleep(TELEMETRY_WAIT)
         else:

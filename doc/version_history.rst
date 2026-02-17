@@ -8,6 +8,15 @@ Version History
 
 .. towncrier release notes start
 
+v0.4.3 (2026-02-17)
+===================
+
+Bug Fixes
+---------
+
+- Fixed ModBus simulator telemetry values. (`OSW-1829 <https://rubinobs.atlassian.net//browse/OSW-1829>`_)
+
+
 v0.4.2 (2026-02-09)
 ===================
 

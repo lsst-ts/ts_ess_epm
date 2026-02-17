@@ -50,7 +50,7 @@ class BaseModbusConnector(ABC):
         """
         self.topics = topics
         self.config = config
-        self.log = log
+        self.log = log.getChild(type(self).__name__)
         self.simulation_mode = simulation_mode
         self.client: AsyncModbusTcpClient = None
 

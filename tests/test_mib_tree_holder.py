@@ -26,7 +26,7 @@ from lsst.ts.ess import epm
 
 class MibTreeTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_mib_tree(self) -> None:
-        mib_tree_holder = epm.MibTreeHolder()
+        mib_tree_holder = epm.snmp.MibTreeHolder()
         assert str(mib_tree_holder.mib_tree["sysDescr"]) == "1.3.6.1.2.1.1.1"
         assert mib_tree_holder.mib_tree["sysDescr"].oid == "1.3.6.1.2.1.1.1"
 
@@ -39,13 +39,13 @@ class MibTreeTestCase(unittest.IsolatedAsyncioTestCase):
             }
         )
         assert len(enterprises_children) == 4
-        assert epm.DeviceName.schneiderPm5xxx.value == enterprises_children.pop()
-        assert epm.DeviceName.raritan.value == enterprises_children.pop()
-        assert epm.DeviceName.netbooter.value == enterprises_children.pop()
+        assert epm.snmp.DeviceName.schneiderPm5xxx.value == enterprises_children.pop()
+        assert epm.snmp.DeviceName.raritan.value == enterprises_children.pop()
+        assert epm.snmp.DeviceName.netbooter.value == enterprises_children.pop()
         assert "eaton" == enterprises_children.pop()
         assert len(enterprises_children) == 0
 
-        assert epm.DeviceName.xups.value in mib_tree_holder.mib_tree
-        assert mib_tree_holder.mib_tree[epm.DeviceName.xups.value].parent.name == "eaton"
+        assert epm.snmp.DeviceName.xups.value in mib_tree_holder.mib_tree
+        assert mib_tree_holder.mib_tree[epm.snmp.DeviceName.xups.value].parent.name == "eaton"
 
         assert len(mib_tree_holder.pending_modules) == 0

@@ -24,8 +24,5 @@ try:
 except ImportError:
     __version__ = "?"
 
-from . import data_client
-from .mib_tree_holder import *
-from .mib_utils import *
 from .modbus_data_client import ModbusDataClient
-from .snmp_server_simulator import *
+from . import snmp

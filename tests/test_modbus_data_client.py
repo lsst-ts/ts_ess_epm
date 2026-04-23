@@ -24,7 +24,7 @@ import types
 import unittest
 
 from lsst.ts import salobj
-from lsst.ts.ess.epm import modbus_data_client
+from lsst.ts.ess.epm.modbus import modbus_data_client
 
 
 class ModbusDataClientTestCase(unittest.IsolatedAsyncioTestCase):

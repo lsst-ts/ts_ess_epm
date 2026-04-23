@@ -24,7 +24,7 @@ import types
 import unittest
 
 from lsst.ts import salobj
-from lsst.ts.ess.epm.modbus_agc150_connector import ModbusAgc150Connector
+from lsst.ts.ess.epm.modbus.modbus_agc150_connector import ModbusAgc150Connector
 
 
 class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):

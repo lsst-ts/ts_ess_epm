@@ -31,8 +31,8 @@ import yaml
 from lsst.ts import salobj
 from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 
+from ..enums import ModbusConnectors
 from .base_modbus_connector import BaseModbusConnector
-from .enums import ModbusConnectors
 from .utils import load_class
 
 

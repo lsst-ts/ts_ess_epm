@@ -31,13 +31,13 @@ from pymodbus.client import AsyncModbusTcpClient
 
 from lsst.ts import salobj
 
-from .base_modbus_connector import BaseModbusConnector
-from .enums import (
+from ..enums import (
     ARRAY_FIELDS_AGC150,
     DiscreteInputsAgc150,
     InputRegistersAgc150,
     InputRegistersAgc150DecimalFactor,
 )
+from .base_modbus_connector import BaseModbusConnector
 from .modbus_simulator import ModbusSimulator
 
 ModbusValueType = Union[int, float, bool, None]
@@ -46,7 +46,7 @@ FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
 # Wait time [s] for the telemetry task.
 TELEMETRY_WAIT = 1.0
 
-MODBUS_SETUP_FILE = pathlib.Path(__file__).resolve().parent / "data" / "agc150_simulator_setup.json"
+MODBUS_SETUP_FILE = pathlib.Path(__file__).resolve().parents[1] / "data" / "agc150_simulator_setup.json"
 
 
 class ModbusAgc150Connector(BaseModbusConnector):

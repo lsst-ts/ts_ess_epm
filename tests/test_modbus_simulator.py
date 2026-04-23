@@ -38,6 +38,7 @@ class ModbusSimulatorTestCase(unittest.IsolatedAsyncioTestCase):
             log = logging.getLogger(type(self).__name__)
             simulator = ModbusSimulator(
                 log=log,
+                json_file="",
                 host="127.0.0.1",
                 port=502,
                 modbus_server="test_server",

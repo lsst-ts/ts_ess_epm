@@ -23,6 +23,7 @@ __all__ = ["ModbusAgc150Connector"]
 
 import asyncio
 import logging
+import pathlib
 import types
 from typing import Union
 
@@ -44,6 +45,8 @@ FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
 
 # Wait time [s] for the telemetry task.
 TELEMETRY_WAIT = 1.0
+
+MODBUS_SETUP_FILE = pathlib.Path(__file__).resolve().parent / "data" / "agc150_simulator_setup.json"
 
 
 class ModbusAgc150Connector(BaseModbusConnector):
@@ -75,7 +78,9 @@ class ModbusAgc150Connector(BaseModbusConnector):
     ) -> None:
         super().__init__(config, topics, log, simulation_mode)
         self.simulator = (
-            ModbusSimulator(log=log, modbus_device=config.device_type) if simulation_mode == 1 else None
+            ModbusSimulator(log=log, json_file=MODBUS_SETUP_FILE, modbus_device=config.device_type)
+            if simulation_mode == 1
+            else None
         )
         self.host = config.host if self.simulator is None else self.simulator.host
         self.port = config.port if self.simulator is None else self.simulator.port

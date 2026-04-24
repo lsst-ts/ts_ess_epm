@@ -8,6 +8,23 @@ Version History
 
 .. towncrier release notes start
 
+v0.5.0 (2026-04-24)
+===================
+
+New Features
+------------
+
+- Extracted all common Modbus processing code into the BaseModbusConnector class. (`OSW-2221 <https://rubinobs.atlassian.net//browse/OSW-2221>`_)
+
+
+Performance Enhancement
+-----------------------
+
+- Moved the SNMP code to the snmp sub module. (`OSW-2221 <https://rubinobs.atlassian.net//browse/OSW-2221>`_)
+- Moved the Modbus code to the modbus sub module. (`OSW-2221 <https://rubinobs.atlassian.net//browse/OSW-2221>`_)
+- Moved the ModBus simulator setup JSON file to the data dir. (`OSW-2221 <https://rubinobs.atlassian.net//browse/OSW-2221>`_)
+
+
 v0.4.3 (2026-02-17)
 ===================
 

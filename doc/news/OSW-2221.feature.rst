@@ -1,1 +1,0 @@
-Extracted all common Modbus processing code into the BaseModbusConnector class.

@@ -1,1 +1,0 @@
-Moved the ModBus simulator setup JSON file to the data dir.

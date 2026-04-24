@@ -19,9 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-try:
-    from .version import __version__
-except ImportError:
-    __version__ = "?"
-
-from . import modbus, snmp
+from .mib_tree_holder import *
+from .mib_utils import *
+from .snmp_data_client import *
+from .snmp_server_simulator import *

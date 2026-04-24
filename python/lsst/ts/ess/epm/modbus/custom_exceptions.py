@@ -19,4 +19,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .snmp_data_client import *
+__all__ = [
+    "NoCoilsDefinedError",
+    "NoHoldingRegistersDefinedError",
+    "NoDiscreteInputsDefinedError",
+    "NoInputRegistersDefinedError",
+    "NotConnectedError",
+]
+
+
+class NoCoilsDefinedError(Exception):
+    """Exception raised when no coils are defined."""
+
+    pass
+
+
+class NoHoldingRegistersDefinedError(Exception):
+    """Exception raised when no holding registers are defined."""
+
+    pass
+
+
+class NoDiscreteInputsDefinedError(Exception):
+    """Exception raised when no discrete inputs are defined."""
+
+    pass
+
+
+class NoInputRegistersDefinedError(Exception):
+    """Exception raised when no input registers are defined."""
+
+    pass
+
+
+class NotConnectedError(Exception):
+    """Exception raised when not connected."""
+
+    pass

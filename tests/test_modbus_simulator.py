@@ -23,13 +23,13 @@ import logging
 import unittest
 from unittest.mock import AsyncMock, patch
 
-from lsst.ts.ess.epm.modbus_simulator import ModbusSimulator
+from lsst.ts.ess.epm.modbus.modbus_simulator import ModbusSimulator
 
 
 class ModbusSimulatorTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_start(self) -> None:
         """Test the start method of ModbusSimulator."""
-        with patch("lsst.ts.ess.epm.modbus_simulator.ModbusSimulatorServer") as MockServer:
+        with patch("lsst.ts.ess.epm.modbus.modbus_simulator.ModbusSimulatorServer") as MockServer:
             # Mock the ModbusSimulatorServer
             mock_server_instance = MockServer.return_value
             mock_server_instance.run_forever = AsyncMock()
@@ -38,6 +38,7 @@ class ModbusSimulatorTestCase(unittest.IsolatedAsyncioTestCase):
             log = logging.getLogger(type(self).__name__)
             simulator = ModbusSimulator(
                 log=log,
+                json_file="",
                 host="127.0.0.1",
                 port=502,
                 modbus_server="test_server",

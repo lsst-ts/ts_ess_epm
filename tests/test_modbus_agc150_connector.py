@@ -24,7 +24,12 @@ import types
 import unittest
 
 from lsst.ts import salobj
-from lsst.ts.ess.epm.modbus_agc150_connector import ModbusAgc150Connector
+from lsst.ts.ess.epm.modbus import (
+    ModbusAgc150Connector,
+    NoCoilsDefinedError,
+    NoHoldingRegistersDefinedError,
+    NotConnectedError,
+)
 
 
 class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
@@ -87,6 +92,44 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             await self.modbus_agc150_connector.disconnect()
             assert not self.modbus_agc150_connector.connected
 
+    async def test_read_coils(self) -> None:
+        salobj.set_test_topic_subname()
+        async with salobj.make_mock_write_topics(
+            name="ESS",
+            attr_names=["tel_agcGenset150"],
+        ) as topics:
+            config = types.SimpleNamespace(
+                host="127.0.0.1",
+                port=502,
+                max_read_timeouts=5,
+                device_name="UnitTest",
+                device_type="agc150genset",
+            )
+            log = logging.getLogger(type(self).__name__)
+            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+
+            with self.assertRaises(NoCoilsDefinedError):
+                await self.modbus_agc150_connector.read_coils()
+
+    async def test_read_holding_registers(self) -> None:
+        salobj.set_test_topic_subname()
+        async with salobj.make_mock_write_topics(
+            name="ESS",
+            attr_names=["tel_agcGenset150"],
+        ) as topics:
+            config = types.SimpleNamespace(
+                host="127.0.0.1",
+                port=502,
+                max_read_timeouts=5,
+                device_name="UnitTest",
+                device_type="agc150genset",
+            )
+            log = logging.getLogger(type(self).__name__)
+            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+
+            with self.assertRaises(NoHoldingRegistersDefinedError):
+                await self.modbus_agc150_connector.read_holding_registers()
+
     async def test_read_discrete_inputs_not_connected(self) -> None:
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
@@ -103,8 +146,8 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             log = logging.getLogger(type(self).__name__)
             self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
 
-            with self.assertRaises(RuntimeError):
-                await self.modbus_agc150_connector._read_discrete_inputs()
+            with self.assertRaises(NotConnectedError):
+                await self.modbus_agc150_connector.read_discrete_inputs()
 
     async def test_read_input_registers_not_connected(self) -> None:
         salobj.set_test_topic_subname()
@@ -122,8 +165,8 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             log = logging.getLogger(type(self).__name__)
             self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
 
-            with self.assertRaises(RuntimeError):
-                await self.modbus_agc150_connector._read_input_registers()
+            with self.assertRaises(NotConnectedError):
+                await self.modbus_agc150_connector.read_input_registers()
 
     async def test_process_telemetry_not_connected(self) -> None:
         salobj.set_test_topic_subname()

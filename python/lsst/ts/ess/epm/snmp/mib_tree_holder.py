@@ -36,7 +36,7 @@ MIB_OID = r"^::= ?{ ?(\w+) +(\d+) ? ?}$"
 DESCRIPTION = "DESCRIPTION"
 INDEX = r"INDEX +\{ ?([\w, ]+) ?\}"
 
-DATA_DIR = pathlib.Path(__file__).parent / "data"
+DATA_DIR = pathlib.Path(__file__).parents[1] / "data"
 
 
 class MibTreeHolder:

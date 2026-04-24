@@ -25,11 +25,11 @@ from enum import Enum, IntEnum
 class ModbusConnectors(Enum):
     """Modbus connectors."""
 
-    agc150genset = "lsst.ts.ess.epm.modbus_agc150_connector.ModbusAgc150Connector"
+    agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150Connector"
 
 
 ARRAY_FIELDS_AGC150 = {
-    "anyAlarmPMS": (
+    "anyAlarmPMS": [
         "anyAlarmPMS1",
         "anyAlarmPMS2",
         "anyAlarmPMS3",
@@ -38,8 +38,8 @@ ARRAY_FIELDS_AGC150 = {
         "anyAlarmPMS6",
         "anyAlarmPMS7",
         "anyAlarmPMS8",
-    ),
-    "readyAutoStartDG": (
+    ],
+    "readyAutoStartDG": [
         "readyAutoStartDG1",
         "readyAutoStartDG2",
         "readyAutoStartDG3",
@@ -48,133 +48,133 @@ ARRAY_FIELDS_AGC150 = {
         "readyAutoStartDG6",
         "readyAutoStartDG7",
         "readyAutoStartDG8",
-    ),
-    "windingTemperature": (
+    ],
+    "windingTemperature": [
         "windingTemperature1",
         "windingTemperature2",
         "windingTemperature3",
-    ),
+    ],
 }
 
-
-class InputRegistersAgc150DecimalFactor(Enum):
-    applicationVersion = 0
-    generatorVoltageL1L2 = 0
-    generatorVoltageL2L3 = 0
-    generatorVoltageL3L1 = 0
-    generatorVoltageL1N = 0
-    generatorVoltageL2N = 0
-    generatorVoltageL3N = 0
-    generatorFrequencyL1 = 2
-    generatorFrequencyL2 = 2
-    generatorFrequencyL3 = 2
-    generatorVoltagePhaseAngleL1L2 = 1
-    generatorVoltagePhaseAngleL2L3 = 1
-    generatorVoltagePhaseAngleL3L1 = 1
-    generatorCurrentL1 = 0
-    generatorCurrentL2 = 0
-    generatorCurrentL3 = 0
-    generatorPowerL1 = 0
-    generatorPowerL2 = 0
-    generatorPowerL3 = 0
-    generatorPower = 0
-    generatorReactivePowerL1 = 0
-    generatorReactivePowerL2 = 0
-    generatorReactivePowerL3 = 0
-    generatorReactivePower = 0
-    generatorApparentPowerL1 = 0
-    generatorApparentPowerL2 = 0
-    generatorApparentPowerL3 = 0
-    generatorApparentPower = 0
-    generatorExportReactiveEnergyCounterTotal = 0
-    generatorExportActiveEnergyCounterDay = 0
-    generatorExportActiveEnergyCounterWeek = 0
-    generatorExportActiveEnergyCounterMonth = 0
-    generatorExportActiveEnergyCounterTotal = 0
-    generatorPF = 2
-    busBVoltageL1L2 = 0
-    busBVoltageL2L3 = 0
-    busBVoltageL3L1 = 0
-    busBVoltageL1N = 0
-    busBVoltageL2N = 0
-    busBVoltageL3N = 0
-    busBFrequencyL1 = 2
-    busBFrequencyL2 = 2
-    busBFrequencyL3 = 2
-    busBVoltagePhaseAngleL1L2 = 1
-    busBVoltagePhaseAngleL2L3 = 1
-    busBVoltagePhaseAngleL3L1 = 1
-    uBBL1uGENL1PhaseAngle = 0
-    uBBL2uGENL2PhaseAngle = 0
-    uBBL3uGENL3PhaseAngle = 0
-    absoluteRunningHours = 0
-    relativeRunningHours = 0
-    numberAlarms = 0
-    numberUnacknowledgedAlarms = 0
-    numberActiveAcknowledgedAlarms = 0
-    numberGBOperations = 0
-    numberMBOperations = 0
-    startAttempts = 0
-    dcSupplyTerm12 = 1
-    serviceTimer1RunningHours = 0
-    serviceTimer1RunningDays = 0
-    serviceTimer2RunningHours = 0
-    serviceTimer2RunningDays = 0
-    cosPhi = 2
-    cosPhiType = 0
-    rpm = 0
-    runningHoursLoadProfile = 0
-    multiInput20 = 0
-    multiInput21 = 0
-    multiInput22 = 0
-    multiInput23 = 0
-    mainsPower = 0
-    engineSpeed = 0
-    engineCoolantTemperature = 1
-    engineOilPressure = 2
-    numberActualFaults = 0
-    engineOilTemperature = 1
-    fuelTemperature = 0
-    intakeManifold1Pressure = 2
-    airInletTemperature = 0
-    coolantLevel = 1
-    fuelRate = 1
-    chargeAirPressure = 0
-    intakeManifold1Temperature = 0
-    driversDemandEnginePercentTorque = 0
-    actualEnginePercentTorque = 0
-    acceleratorPedalPosition = 0
-    percentLoadCurrentSpeed = 0
-    airInletPressure = 2
-    exhaustGasTemperature = 1
-    engineHours = 0
-    engineOilFilterDifferentialPressure = 2
-    keyswitchBatteryPotential = 1
-    fuelDeliveryPressure = 2
-    engineOilLevel = 1
-    crankcasePressure = 2
-    coolantPressure = 2
-    waterInFuel = 0
-    blowbyFlow = 0
-    fuelRailPressure = 0
-    timingRailPressure = 0
-    aftercoolerWaterInletTemperature = 0
-    turboOilTemperature = 1
-    particulateTrapInletPressure = 2
-    airFilterDifferentialPressure = 3
-    coolantFilterDifferentialPressure = 2
-    atmosphericPressure = 2
-    ambientAirTemperature = 1
-    exhaustTemperatureRight = 1
-    exhaustTemperatureLeft = 1
-    windingTemperature = 0
-    auxiliaryAnalogInfo = 0
-    engineTurbocharger1CompressorOutletTemperature = 0
-    engineIntercoolerTemperature = 0
-    engineTripFuel = 0
-    engineTotalFuel = 1
-    tripFuelGasseous = 0
-    totalFuelGasseous = 1
+AGC150_DECIMAL_FACTOR = {
+    "applicationVersion": 0,
+    "generatorVoltageL1L2": 0,
+    "generatorVoltageL2L3": 0,
+    "generatorVoltageL3L1": 0,
+    "generatorVoltageL1N": 0,
+    "generatorVoltageL2N": 0,
+    "generatorVoltageL3N": 0,
+    "generatorFrequencyL1": 2,
+    "generatorFrequencyL2": 2,
+    "generatorFrequencyL3": 2,
+    "generatorVoltagePhaseAngleL1L2": 1,
+    "generatorVoltagePhaseAngleL2L3": 1,
+    "generatorVoltagePhaseAngleL3L1": 1,
+    "generatorCurrentL1": 0,
+    "generatorCurrentL2": 0,
+    "generatorCurrentL3": 0,
+    "generatorPowerL1": 0,
+    "generatorPowerL2": 0,
+    "generatorPowerL3": 0,
+    "generatorPower": 0,
+    "generatorReactivePowerL1": 0,
+    "generatorReactivePowerL2": 0,
+    "generatorReactivePowerL3": 0,
+    "generatorReactivePower": 0,
+    "generatorApparentPowerL1": 0,
+    "generatorApparentPowerL2": 0,
+    "generatorApparentPowerL3": 0,
+    "generatorApparentPower": 0,
+    "generatorExportReactiveEnergyCounterTotal": 0,
+    "generatorExportActiveEnergyCounterDay": 0,
+    "generatorExportActiveEnergyCounterWeek": 0,
+    "generatorExportActiveEnergyCounterMonth": 0,
+    "generatorExportActiveEnergyCounterTotal": 0,
+    "generatorPF": 2,
+    "busBVoltageL1L2": 0,
+    "busBVoltageL2L3": 0,
+    "busBVoltageL3L1": 0,
+    "busBVoltageL1N": 0,
+    "busBVoltageL2N": 0,
+    "busBVoltageL3N": 0,
+    "busBFrequencyL1": 2,
+    "busBFrequencyL2": 2,
+    "busBFrequencyL3": 2,
+    "busBVoltagePhaseAngleL1L2": 1,
+    "busBVoltagePhaseAngleL2L3": 1,
+    "busBVoltagePhaseAngleL3L1": 1,
+    "uBBL1uGENL1PhaseAngle": 0,
+    "uBBL2uGENL2PhaseAngle": 0,
+    "uBBL3uGENL3PhaseAngle": 0,
+    "absoluteRunningHours": 0,
+    "relativeRunningHours": 0,
+    "numberAlarms": 0,
+    "numberUnacknowledgedAlarms": 0,
+    "numberActiveAcknowledgedAlarms": 0,
+    "numberGBOperations": 0,
+    "numberMBOperations": 0,
+    "startAttempts": 0,
+    "dcSupplyTerm12": 1,
+    "serviceTimer1RunningHours": 0,
+    "serviceTimer1RunningDays": 0,
+    "serviceTimer2RunningHours": 0,
+    "serviceTimer2RunningDays": 0,
+    "cosPhi": 2,
+    "cosPhiType": 0,
+    "rpm": 0,
+    "runningHoursLoadProfile": 0,
+    "multiInput20": 0,
+    "multiInput21": 0,
+    "multiInput22": 0,
+    "multiInput23": 0,
+    "mainsPower": 0,
+    "engineSpeed": 0,
+    "engineCoolantTemperature": 1,
+    "engineOilPressure": 2,
+    "numberActualFaults": 0,
+    "engineOilTemperature": 1,
+    "fuelTemperature": 0,
+    "intakeManifold1Pressure": 2,
+    "airInletTemperature": 0,
+    "coolantLevel": 1,
+    "fuelRate": 1,
+    "chargeAirPressure": 0,
+    "intakeManifold1Temperature": 0,
+    "driversDemandEnginePercentTorque": 0,
+    "actualEnginePercentTorque": 0,
+    "acceleratorPedalPosition": 0,
+    "percentLoadCurrentSpeed": 0,
+    "airInletPressure": 2,
+    "exhaustGasTemperature": 1,
+    "engineHours": 0,
+    "engineOilFilterDifferentialPressure": 2,
+    "keyswitchBatteryPotential": 1,
+    "fuelDeliveryPressure": 2,
+    "engineOilLevel": 1,
+    "crankcasePressure": 2,
+    "coolantPressure": 2,
+    "waterInFuel": 0,
+    "blowbyFlow": 0,
+    "fuelRailPressure": 0,
+    "timingRailPressure": 0,
+    "aftercoolerWaterInletTemperature": 0,
+    "turboOilTemperature": 1,
+    "particulateTrapInletPressure": 2,
+    "airFilterDifferentialPressure": 3,
+    "coolantFilterDifferentialPressure": 2,
+    "atmosphericPressure": 2,
+    "ambientAirTemperature": 1,
+    "exhaustTemperatureRight": 1,
+    "exhaustTemperatureLeft": 1,
+    "windingTemperature": 0,
+    "auxiliaryAnalogInfo": 0,
+    "engineTurbocharger1CompressorOutletTemperature": 0,
+    "engineIntercoolerTemperature": 0,
+    "engineTripFuel": 0,
+    "engineTotalFuel": 1,
+    "tripFuelGasseous": 0,
+    "totalFuelGasseous": 1,
+}
 
 
 class DiscreteInputsAgc150(IntEnum):

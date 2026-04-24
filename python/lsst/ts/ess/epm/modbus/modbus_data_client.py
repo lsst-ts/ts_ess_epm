@@ -21,6 +21,7 @@
 
 __all__ = ["ModbusDataClient"]
 
+import importlib
 import logging
 import types
 import typing
@@ -31,9 +32,14 @@ import yaml
 from lsst.ts import salobj
 from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 
+from ..enums import ModbusConnectors
 from .base_modbus_connector import BaseModbusConnector
-from .enums import ModbusConnectors
-from .utils import load_class
+
+
+def load_class(path: str) -> Type:
+    module_path, class_name = path.rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
 
 
 class ModbusDataClient(BaseReadLoopDataClient):

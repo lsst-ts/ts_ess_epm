@@ -19,11 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import importlib
-from typing import Type
-
-
-def load_class(path: str) -> Type:
-    module_path, class_name = path.rsplit(".", 1)
-    module = importlib.import_module(module_path)
-    return getattr(module, class_name)
+from .custom_exceptions import *
+from .modbus_agc150_connector import *
+from .modbus_data_client import *

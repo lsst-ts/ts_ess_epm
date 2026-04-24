@@ -20,11 +20,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
+import pathlib
 
 from pymodbus.server import ModbusSimulatorServer
-
-MODBUS_SIMULATOR_SETUP = os.path.dirname(__file__) + "/modbus_simulator_setup.json"
 
 
 class ModbusSimulator:
@@ -44,11 +42,14 @@ class ModbusSimulator:
     modbus_device : `str`
         The modbus device name.
         Also needs to match the device_type in ts_config_ocs.
+    json_file : `str` | `pathlib.Path`
+        The path to the modbus simulator setup json file.
     """
 
     def __init__(
         self,
         log: logging.Logger,
+        json_file: str | pathlib.Path,
         host: str = "0.0.0.0",
         port: int = 502,
         modbus_server: str = "server",
@@ -62,7 +63,7 @@ class ModbusSimulator:
             modbus_device=modbus_device,
             http_host=None,
             http_port=None,
-            json_file=MODBUS_SIMULATOR_SETUP,
+            json_file=json_file,
         )
 
     async def start(self) -> None:

@@ -38,13 +38,13 @@ ADDITIONAL_TOPICS_NUM_CALLS = {
 class SnmpDataClientTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_snmp_data_client(self) -> None:
         log = logging.getLogger()
-        for device_type in [device_name.value for device_name in epm.DeviceName]:
+        for device_type in [device_name.value for device_name in epm.snmp.DeviceName]:
             component_info = ComponentInfo(name="ESS", topic_subname="")
             topic_name = f"tel_{device_type}"
 
             tel_topics: dict[str, AsyncMock] = {}
             topic_names = [topic_name]
-            if device_type == epm.DeviceName.raritan.value:
+            if device_type == epm.snmp.DeviceName.raritan.value:
                 topic_names += ADDITIONAL_TOPICS_NUM_CALLS.keys()
             for tn in topic_names:
                 tel_topic = AsyncMock()
@@ -64,17 +64,17 @@ class SnmpDataClientTestCase(unittest.IsolatedAsyncioTestCase):
                 connect_timeout=1,
                 poll_interval=0.1,
             )
-            snmp_data_client = epm.data_client.SnmpDataClient(
+            snmp_data_client = epm.snmp.SnmpDataClient(
                 config=config, topics=self.topics, log=log, simulation_mode=1
             )
             await snmp_data_client.setup_reading()
-            assert snmp_data_client.system_description == epm.SIMULATED_SYS_DESCR
+            assert snmp_data_client.system_description == epm.snmp.SIMULATED_SYS_DESCR
 
             await snmp_data_client.read_data()
 
             await self.assert_set_write(topic_name, 1)
 
-            if device_type == epm.DeviceName.raritan.value:
+            if device_type == epm.snmp.DeviceName.raritan.value:
                 for topic_name in ADDITIONAL_TOPICS_NUM_CALLS:
                     await self.assert_set_write(topic_name, ADDITIONAL_TOPICS_NUM_CALLS[topic_name])
 

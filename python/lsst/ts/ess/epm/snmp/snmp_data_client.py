@@ -44,8 +44,8 @@ from pysnmp.hlapi.v3arch.asyncio import (
 from lsst.ts import utils
 from lsst.ts.ess.common.data_client import BaseReadLoopDataClient
 
-from ..mib_tree_holder import MibTreeHolder
-from ..mib_utils import (
+from .mib_tree_holder import MibTreeHolder
+from .mib_utils import (
     FREQUENCY_OID_LIST,
     RARITAN_EXT_SENS_DEC_DIGITS_IDS,
     DeviceName,
@@ -54,7 +54,7 @@ from ..mib_utils import (
     TelemetryItemName,
     TelemetryItemType,
 )
-from ..snmp_server_simulator import SnmpServerSimulator
+from .snmp_server_simulator import SnmpServerSimulator
 
 if typing.TYPE_CHECKING:
     from lsst.ts import salobj

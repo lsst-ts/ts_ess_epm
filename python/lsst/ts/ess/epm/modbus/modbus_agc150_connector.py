@@ -25,9 +25,6 @@ import asyncio
 import logging
 import pathlib
 import types
-from typing import Union
-
-from pymodbus.client import AsyncModbusTcpClient
 
 from lsst.ts import salobj
 
@@ -38,10 +35,6 @@ from ..enums import (
     InputRegistersAgc150,
 )
 from .base_modbus_connector import BaseModbusConnector
-from .modbus_simulator import ModbusSimulator
-
-ModbusValueType = Union[int, float, bool, None]
-FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
 
 # Wait time [s] for the telemetry task.
 TELEMETRY_WAIT = 1.0
@@ -77,13 +70,8 @@ class ModbusAgc150Connector(BaseModbusConnector):
         simulation_mode: int = 0,
     ) -> None:
         super().__init__(config, topics, log, simulation_mode)
-        self.simulator = (
-            ModbusSimulator(log=log, json_file=MODBUS_SETUP_FILE, modbus_device=config.device_type)
-            if simulation_mode == 1
-            else None
-        )
-        self.host = config.host if self.simulator is None else self.simulator.host
-        self.port = config.port if self.simulator is None else self.simulator.port
+
+        self.simulator_config_file = MODBUS_SETUP_FILE
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
 
         # Populate the necessary Modbus address dicts.
@@ -97,32 +85,6 @@ class ModbusAgc150Connector(BaseModbusConnector):
         self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
 
         self.log.debug("Modbus connector initialized.")
-
-    async def connect(self) -> None:
-        """Connect to the modbus client."""
-        if not self.connected:
-            if self.simulator is not None:
-                await self.simulator.start()
-            self.client = AsyncModbusTcpClient(
-                self.host,
-                port=self.port,
-            )
-            await self.client.connect()
-            if self.client.connected:
-                self.log.info("Client connected.")
-
-    async def disconnect(self) -> None:
-        """Disconnect from the modbus client."""
-        if self.connected:
-            try:
-                self.client.close()
-            except Exception:
-                pass
-            finally:
-                self.client = None
-            self.log.info("Modbus client is closed.")
-            if self.simulator is not None:
-                await self.simulator.stop()
 
     async def process_telemetry(self) -> None:
         """Read the different registers

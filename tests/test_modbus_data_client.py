@@ -30,25 +30,27 @@ from lsst.ts.ess.epm.modbus import modbus_data_client
 class ModbusDataClientTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_modbus_data_client(self) -> None:
         salobj.set_test_topic_subname()
-        async with salobj.make_mock_write_topics(
-            name="ESS",
-            attr_names=["tel_agcGenset150"],
-        ) as topics:
-            config = types.SimpleNamespace(
-                host="127.0.0.1",
-                port=502,
-                max_read_timeouts=5,
-                connect_timeout=1,
-                device_name="UnitTest",
-                device_type="agc150genset",
-            )
-            log = logging.getLogger(type(self).__name__)
-            self.modbus_data_client = modbus_data_client.ModbusDataClient(
-                config=config, topics=topics, log=log, simulation_mode=1
-            )
-            assert self.modbus_data_client is not None
-            assert self.modbus_data_client.modbus_connector is not None
-            await self.modbus_data_client.connect()
-            assert self.modbus_data_client.modbus_connector.connected
-            await self.modbus_data_client.disconnect()
-            assert not self.modbus_data_client.modbus_connector.connected
+
+        for attr_names, devicetype in [(["tel_agcGenset150"], "agc150genset"), (["tel_temperature"], "tma")]:
+            async with salobj.make_mock_write_topics(
+                name="ESS",
+                attr_names=attr_names,
+            ) as topics:
+                config = types.SimpleNamespace(
+                    host="127.0.0.1",
+                    port=502,
+                    max_read_timeouts=5,
+                    connect_timeout=1,
+                    device_name="UnitTest",
+                    device_type=devicetype,
+                )
+                log = logging.getLogger(type(self).__name__)
+                self.modbus_data_client = modbus_data_client.ModbusDataClient(
+                    config=config, topics=topics, log=log, simulation_mode=1
+                )
+                assert self.modbus_data_client is not None
+                assert self.modbus_data_client.modbus_connector is not None
+                await self.modbus_data_client.connect()
+                assert self.modbus_data_client.modbus_connector.connected
+                await self.modbus_data_client.disconnect()
+                assert not self.modbus_data_client.modbus_connector.connected

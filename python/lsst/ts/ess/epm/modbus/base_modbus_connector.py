@@ -22,6 +22,7 @@
 __all__ = ["BaseModbusConnector"]
 
 import logging
+import pathlib
 import types
 from abc import ABC, abstractmethod
 
@@ -36,6 +37,7 @@ from .custom_exceptions import (
     NoInputRegistersDefinedError,
     NotConnectedError,
 )
+from .modbus_simulator import ModbusSimulator
 
 ModbusValueType = int | float | bool | None
 FieldValueType = ModbusValueType | list[ModbusValueType]
@@ -59,6 +61,14 @@ class BaseModbusConnector(ABC):
     ----------
     client : `AsyncModbusTcpClient`
         Client to connect to the Modbus server.
+    simulator_config_file : `pathlib.Path` | None
+        The path to the modbus simulator configuration file.
+    simulator : `ModbusSimulator` | None
+        The modbus simulator instance.
+    host : `str`
+        The host to connect to.
+    port : `int`
+        The port to connect to.
     coils_dict : `dict[str, int]`
         Dict of coil (name, address) pairs.
     holding_registers_dict : `dict[str, int]`
@@ -76,6 +86,14 @@ class BaseModbusConnector(ABC):
     decimal_factor_dict : `dict[str, int]`
         Lookup dict for decimal factors. This is used to convert Modbus int
         values to telemetry decimal values.
+    num_coils : `int`
+        The number of coils to read.
+    num_holding_registers : `int`
+        The number of holding_registers to read.
+    num_discrete_inputs : `int`
+        The number of discrete inputs to read.
+    num_input_registers : `int`
+        The number of input registers to read.
     """
 
     def __init__(
@@ -90,6 +108,10 @@ class BaseModbusConnector(ABC):
         self.log = log.getChild(type(self).__name__)
         self.simulation_mode = simulation_mode
         self.client: AsyncModbusTcpClient = None
+        self.simulator_config_file: pathlib.Path | None = None
+        self.simulator: ModbusSimulator | None = None
+        self.host = ""
+        self.port = 0
 
         # Dicts that hold info for the various Modbus addresses.
         self.coils_dict: dict[str, int] = {}
@@ -104,6 +126,12 @@ class BaseModbusConnector(ABC):
         # Dict for converting ints to floats.
         self.decimal_factor_dict: dict[str, int] = {}
 
+        # Numbers of registers to read.
+        self.num_coils = 1
+        self.num_holding_registers = 1
+        self.num_discrete_inputs = 1
+        self.num_input_registers = 1
+
     @property
     def connected(self) -> bool:
         """Is the modbus client connected?
@@ -115,21 +143,46 @@ class BaseModbusConnector(ABC):
         """
         return self.client is not None and self.client.connected
 
-    @abstractmethod
     async def connect(self) -> None:
-        """Establish a connection to the Modbus client."""
-        pass
+        """Connect to the modbus client."""
+        if self.simulation_mode == 1:
+            assert self.simulator_config_file is not None
+            self.log.debug(f"Using {self.simulator_config_file=}.")
+            self.simulator = ModbusSimulator(
+                log=self.log, json_file=self.simulator_config_file, modbus_device=self.config.device_type
+            )
+        self.host = self.config.host if self.simulator is None else self.simulator.host
+        self.port = self.config.port if self.simulator is None else self.simulator.port
 
-    @abstractmethod
+        if not self.connected:
+            if self.simulator is not None:
+                await self.simulator.start()
+            self.client = AsyncModbusTcpClient(
+                self.host,
+                port=self.port,
+            )
+            await self.client.connect()
+            if self.client.connected:
+                self.log.info("Client connected.")
+
     async def disconnect(self) -> None:
-        """Disconnect from the Modbus client."""
-        pass
+        """Disconnect from the modbus client."""
+        if self.connected:
+            try:
+                self.client.close()
+            except Exception:
+                pass
+            finally:
+                self.client = None
+            self.log.info("Modbus client is closed.")
+            if self.simulator is not None:
+                await self.simulator.stop()
 
     def get_xml_field_name(self, field_name: str) -> str:
         """Get the XML name for a Modbus field name.
 
         For array fields, the number is removed.
-        e.g. anyAlarmPMS1 -> anyAlarmPMS
+        For instance, anyAlarmPMS1 -> anyAlarmPMS
 
         Parameters
         ----------
@@ -149,7 +202,7 @@ class BaseModbusConnector(ABC):
                 break
         return xml_field_name
 
-    def process_modbus_value(self, field: str, value: int | bool) -> ModbusValueType:
+    def process_modbus_value(self, field: str, value: ModbusValueType) -> ModbusValueType:
         """Process the value read from the modbus client.
 
         Convert unsigned ints to signed ints and apply the decimal factor.
@@ -166,6 +219,7 @@ class BaseModbusConnector(ABC):
         `int` | `float` | `bool`
             The processed value.
         """
+        assert value is not None
         if isinstance(value, bool):
             return value
 
@@ -176,16 +230,7 @@ class BaseModbusConnector(ABC):
 
         return signed_value / (10**decimal_factor)
 
-    async def save_field(self, input_name: str, read_value: int | bool) -> None:
-        """Process and store the value read from the modbus client.
-
-        Parameters
-        ----------
-        input_name : `str`
-            The modbus input name.
-        read_value : `int` | `bool`
-            The value read from the modbus client.
-        """
+    async def save_field(self, input_name: str, read_value: ModbusValueType) -> None:
         """Process and store the value read from the modbus client.
 
         Parameters
@@ -244,7 +289,10 @@ class BaseModbusConnector(ABC):
 
         if self.connected:
             for input_name, input_address in self.coils_dict.items():
-                response = await self.client.read_coils(address=input_address, count=1)
+                self.log.debug(
+                    f"Reading {self.num_coils} coils starting at {input_address} for {input_name}."
+                )
+                response = await self.client.read_coils(address=input_address, count=self.num_coils)
                 await self.process_modbus_response_array(input_name, input_address, "Coil", response.bits)
         else:
             raise NotConnectedError()
@@ -264,7 +312,13 @@ class BaseModbusConnector(ABC):
 
         if self.connected:
             for input_name, input_address in self.discrete_inputs_dict.items():
-                response = await self.client.read_discrete_inputs(address=input_address, count=1)
+                self.log.debug(
+                    f"Reading {self.num_discrete_inputs} discrete inputs "
+                    f"starting at {input_address} for {input_name}."
+                )
+                response = await self.client.read_discrete_inputs(
+                    address=input_address, count=self.num_discrete_inputs
+                )
                 await self.process_modbus_response_array(
                     input_name, input_address, "Discrete input", response.bits
                 )
@@ -286,9 +340,15 @@ class BaseModbusConnector(ABC):
 
         if self.connected:
             for input_name, input_address in self.holding_registers_dict.items():
-                response = await self.client.read_holding_registers(address=input_address, count=1)
+                self.log.debug(
+                    f"Reading {self.num_holding_registers} holding registers "
+                    f"starting at {input_address} for {input_name}."
+                )
+                response = await self.client.read_holding_registers(
+                    address=input_address, count=self.num_holding_registers
+                )
                 await self.process_modbus_response_array(
-                    input_name, input_address, "Holding register", response.bits
+                    input_name, input_address, "Holding register", response.registers
                 )
         else:
             raise NotConnectedError()
@@ -308,7 +368,13 @@ class BaseModbusConnector(ABC):
 
         if self.connected:
             for input_name, input_address in self.input_registers_dict.items():
-                response = await self.client.read_input_registers(address=input_address, count=1)
+                self.log.debug(
+                    f"Reading {self.num_input_registers} input registers "
+                    f"starting at {input_address} for {input_name}."
+                )
+                response = await self.client.read_input_registers(
+                    address=input_address, count=self.num_input_registers
+                )
                 await self.process_modbus_response_array(
                     input_name, input_address, "Input register", response.registers
                 )

@@ -1,0 +1,96 @@
+{
+  "server_list": {
+    "server": {
+      "comm": "tcp",
+      "host": "0.0.0.0",
+      "port": 502,
+      "framer": "socket",
+      "identity": {
+        "VendorName": "pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
+        "ProductName": "pymodbus Server",
+        "ModelName": "pymodbus Server",
+        "MajorMinorRevision": "3.1.0"
+      }
+    }
+  },
+  "device_list": {
+    "tma": {
+      "setup": {
+        "co size": 0,
+        "di size": 0,
+        "hr size": 33970,
+        "ir size": 0,
+        "shared blocks": true,
+        "type exception": true,
+        "defaults": {
+          "value": {
+            "bits": 0,
+            "uint16": 0,
+            "uint32": 0,
+            "float32": 0.0,
+            "string": ""
+          },
+          "action": {
+            "bits": null,
+            "uint16": null,
+            "uint32": null,
+            "float32": null,
+            "string": null
+          }
+        }
+      },
+      "invalid": [],
+      "write": [],
+      "bits": [
+        {
+          "addr": [
+            0,
+            2047
+          ],
+          "value": 65535,
+          "comment": "Necessary otherwise the simulator throws exceptions. All values are set to True so reading any of these registers will generate an alarm."
+        },
+        {
+          "addr": [
+            2048,
+            2117
+          ],
+          "value": 21845,
+          "comment": "Coil start 32769 / 16 = 2048.125, coil end 33869 / 16 = 2116.875. One coil per 2 bytes so 21845 == 0b0101010101010101 corresponds to all sensor coil registers False and all non-sensor coil registers True. In reality there are less than 50 sensors for each sector."
+        },
+        {
+          "addr": [
+            2118,
+            32767
+          ],
+          "value": 65535,
+          "comment": "Necessary otherwise the simulator throws exceptions. All values are set to True so reading any of these registers will generate an alarm."
+        }
+      ],
+      "uint16": [],
+      "uint32": [],
+      "float32": [
+        {
+          "addr": [
+            32769,
+            33867
+          ],
+          "value": 11.0,
+          "comment": "Set all holding registers for 50 sensors per sector to the same value. In reality there are less than 50 sensors for each sector."
+        },
+        {
+          "addr": [
+            33869,
+            33967
+          ],
+          "value": 0.0,
+          "comment": "Filling up the rest of the holding registers with values equal to 0. These are marked as FREE in the sensor layout document."
+        }
+      ],
+      "string": [],
+      "repeat": []
+    }
+  }
+}

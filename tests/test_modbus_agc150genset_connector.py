@@ -25,19 +25,19 @@ import unittest
 
 from lsst.ts import salobj
 from lsst.ts.ess.epm.modbus import (
-    ModbusAgc150Connector,
+    ModbusAgc150GensetConnector,
     NoCoilsDefinedError,
     NoHoldingRegistersDefinedError,
     NotConnectedError,
 )
 
 
-class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
-    async def test_modbus_agc150_connector(self) -> None:
+class ModbusAgc150GensetConnectorTestCase(unittest.IsolatedAsyncioTestCase):
+    async def test_modbus_agc150_genset_connector(self) -> None:
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -47,7 +47,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(
                 config=config,
                 topics=topics,
                 log=log,
@@ -63,7 +63,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -73,7 +73,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(
                 config=config,
                 topics=topics,
                 log=log,
@@ -96,7 +96,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -106,7 +106,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(config=config, topics=topics, log=log)
 
             with self.assertRaises(NoCoilsDefinedError):
                 await self.modbus_agc150_connector.read_coils()
@@ -115,7 +115,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -125,7 +125,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(config=config, topics=topics, log=log)
 
             with self.assertRaises(NoHoldingRegistersDefinedError):
                 await self.modbus_agc150_connector.read_holding_registers()
@@ -134,7 +134,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -144,7 +144,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(config=config, topics=topics, log=log)
 
             with self.assertRaises(NotConnectedError):
                 await self.modbus_agc150_connector.read_discrete_inputs()
@@ -153,7 +153,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -163,7 +163,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(config=config, topics=topics, log=log)
 
             with self.assertRaises(NotConnectedError):
                 await self.modbus_agc150_connector.read_input_registers()
@@ -172,7 +172,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
         salobj.set_test_topic_subname()
         async with salobj.make_mock_write_topics(
             name="ESS",
-            attr_names=["tel_agcGenset150"],
+            attr_names=["tel_agcGenset150", "evt_sensorStatus"],
         ) as topics:
             config = types.SimpleNamespace(
                 host="127.0.0.1",
@@ -182,7 +182,7 @@ class ModbusAgc150ConnectorTestCase(unittest.IsolatedAsyncioTestCase):
                 device_type="agc150genset",
             )
             log = logging.getLogger(type(self).__name__)
-            self.modbus_agc150_connector = ModbusAgc150Connector(config=config, topics=topics, log=log)
+            self.modbus_agc150_connector = ModbusAgc150GensetConnector(config=config, topics=topics, log=log)
 
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(NotConnectedError):
                 await self.modbus_agc150_connector.process_telemetry()

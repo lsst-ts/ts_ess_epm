@@ -20,6 +20,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .custom_exceptions import *
-from .modbus_agc150_connector import *
+from .modbus_agc150genset_connector import *
 from .modbus_data_client import *
 from .modbus_tma_connector import *

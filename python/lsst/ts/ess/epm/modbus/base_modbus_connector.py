@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ["BaseModbusConnector"]
+__all__ = ["BaseModbusConnector", "ModbusValueType"]
 
 import logging
 import pathlib
@@ -121,7 +121,6 @@ class BaseModbusConnector(ABC):
 
         # Dicts to help save and send telemetry.
         self.telemetry_fields: dict[str, FieldValueType] = {}
-        self.array_fields: dict[str, list[str]] = {}
 
         # Dict for converting ints to floats.
         self.decimal_factor_dict: dict[str, int] = {}
@@ -178,30 +177,6 @@ class BaseModbusConnector(ABC):
             if self.simulator is not None:
                 await self.simulator.stop()
 
-    def get_xml_field_name(self, field_name: str) -> str:
-        """Get the XML name for a Modbus field name.
-
-        For array fields, the number is removed.
-        For instance, anyAlarmPMS1 -> anyAlarmPMS
-
-        Parameters
-        ----------
-        field_name : `str`
-            The field name.
-
-        Returns
-        -------
-        str
-            The XML field name.
-        """
-
-        xml_field_name = field_name
-        for array_field, array in self.array_fields.items():
-            if field_name in array:
-                xml_field_name = array_field
-                break
-        return xml_field_name
-
     def process_modbus_value(self, field: str, value: ModbusValueType) -> ModbusValueType:
         """Process the value read from the modbus client.
 
@@ -224,7 +199,7 @@ class BaseModbusConnector(ABC):
             return value
 
         signed_value = value if value < 32768 else value - 65536
-        decimal_factor = self.decimal_factor_dict[self.get_xml_field_name(field)]
+        decimal_factor = self.decimal_factor_dict[field] if field in self.decimal_factor_dict else 0
         if decimal_factor == 0:
             return signed_value
 
@@ -240,14 +215,8 @@ class BaseModbusConnector(ABC):
         read_value : `int` | `bool`
             The value read from the modbus client.
         """
-        field_name = self.get_xml_field_name(input_name)
-        processed_value = self.process_modbus_value(field_name, read_value)
-        field = self.telemetry_fields.get(field_name)
-        if isinstance(field, list):
-            index = self.array_fields[field_name].index(input_name)
-            field[index] = processed_value
-        else:
-            field = processed_value
+        processed_value = self.process_modbus_value(input_name, read_value)
+        self.telemetry_fields[input_name] = processed_value
 
     async def process_modbus_response_array(
         self,

@@ -26,11 +26,11 @@ from enum import IntEnum, StrEnum
 class ModbusConnectors(StrEnum):
     """Modbus connectors."""
 
-    agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150Connector"
+    agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150GensetConnector"
     tma = "lsst.ts.ess.epm.modbus.ModbusTMAConnector"
 
 
-ARRAY_FIELDS_AGC150 = {
+AGC150_ARRAY_FIELDS = {
     "anyAlarmPMS": [
         "anyAlarmPMS1",
         "anyAlarmPMS2",
@@ -168,7 +168,9 @@ AGC150_DECIMAL_FACTOR = {
     "ambientAirTemperature": 1,
     "exhaustTemperatureRight": 1,
     "exhaustTemperatureLeft": 1,
-    "windingTemperature": 0,
+    "windingTemperature1": 0,
+    "windingTemperature2": 0,
+    "windingTemperature3": 0,
     "auxiliaryAnalogInfo": 0,
     "engineTurbocharger1CompressorOutletTemperature": 0,
     "engineIntercoolerTemperature": 0,
@@ -179,7 +181,7 @@ AGC150_DECIMAL_FACTOR = {
 }
 
 
-class DiscreteInputsAgc150(IntEnum):
+class DiscreteInputsAgc150Genset(IntEnum):
     gbPositionOn = 0
     mbPositionOn = 1
     running = 3
@@ -221,7 +223,7 @@ class DiscreteInputsAgc150(IntEnum):
     anyMainsSyncInhibit = 54
 
 
-class InputRegistersAgc150(IntEnum):
+class InputRegistersAgc150Genset(IntEnum):
     applicationVersion = 500
     generatorVoltageL1L2 = 501
     generatorVoltageL2L3 = 502

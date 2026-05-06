@@ -28,6 +28,7 @@ class ModbusConnectors(StrEnum):
 
     agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150GensetConnector"
     agc150mains = "lsst.ts.ess.epm.modbus.ModbusAgc150MainsConnector"
+    eaton9sx = "lsst.ts.ess.epm.modbus.ModbusEaton9sxConnector"
     tma = "lsst.ts.ess.epm.modbus.ModbusTMAConnector"
 
 
@@ -675,3 +676,84 @@ TMA_SENSOR_DICT: dict[TMASector, list[TMASensorInfo]] = {
         TMASensorInfo(code="DS23", subsector="MT", coordinate="12", coil=33791, holding_register=433791),
     ],
 }
+
+
+class DiscreteInputsEaton9sx(IntEnum):
+    loadProtectedStatus = 1024
+    upsCoupled = 1025
+    unitGeneralAlarm = 1026
+    configurationFirmwareFault = 1027
+    upsInBackupStatus = 1028
+    batteryLowWarning = 1029
+    lowBattery = 1030
+    communicationFault = 1033
+    upsOverload = 1034
+    emergencyStop = 1035
+    batteryToBeChecked = 1037
+    deviceVerificationFault = 1038
+    upsClass = 1041
+    manualBypassPresent = 1045
+    modeEco = 1047
+    batteryPresent = 1056
+    batteryTestFault = 1058
+    wiringFault = 1090
+    main1VoltageOutOfTolerance = 1096
+    main1FuseFault = 1097
+    chargerOverTemperatureFault = 1098
+    mainFrequencyTolerance = 1099
+    redundancyLost = 1111
+    maintenancePosition = 1121
+    main2Overload = 1125
+    outputOnBypass = 1127
+    main2FrequencyOutOfTolerance = 1129
+    phaseM2OutOfTolerance = 1131
+    internalFault = 1136
+    main2InternalFault = 1145
+    chargerGeneralFault = 1168
+    batteryCharge1 = 1169
+    batteryCharge2 = 1171
+    inverterMajorFault = 1217
+    iverterOverload = 1218
+    inverterOverTemperature = 1226
+    shortCircuit = 1265
+    electronicPowerSupplyFault = 1286
+    bypassWiringFault = 1287
+
+
+class InputRegistersEaton9sx(IntEnum):
+    currentPhase1Output = 265
+    currentPhase2Output = 266
+    currentPhase3Output = 267
+    voltagePhase1Main2 = 286
+    voltagePhase2Main2 = 287
+    voltagePhase3Main2 = 288
+    outputVoltage1N = 292
+    outputVoltage2N = 293
+    outputVoltage3N = 294
+    batteryVoltage = 301
+    outputActivePowerPhase1 = 304
+    outputActivePowerPhase2 = 305
+    outputActivePowerPhase3 = 306
+    outputApparentPowerPhase1 = 307
+    outputApparentPowerPhase2 = 308
+    outputApparentPowerPhase3 = 309
+    outputTotalActivePower = 310
+    outputTotalApparentPower = 311
+    outputLoadLevel = 313
+    powerFactory = 317
+    main1Frequency = 318
+    main2Frequency = 320
+    outputFrequency = 321
+    batteryBackupTime = 329
+    batteryChargingLevel = 331
+    voltageMain1Phase1 = 336
+    voltageMain1Phase2 = 337
+    voltageMain1Phase3 = 338
+    manufacturerName = 416
+    productName = 424
+    upsModel = 432
+    serialNumber = 440
+    partNumber = 448
+    nominalApparentPower = 521
+    nominalActivePower = 529
+    nominalBatteryVoltage = 531

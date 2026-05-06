@@ -24,3 +24,4 @@ from .modbus_agc150genset_connector import *
 from .modbus_agc150mains_connector import *
 from .modbus_data_client import *
 from .modbus_tma_connector import *
+from .modbus_eaton9sx_connector import *

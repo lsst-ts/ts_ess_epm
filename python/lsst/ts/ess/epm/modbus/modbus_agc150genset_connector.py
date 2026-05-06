@@ -90,6 +90,9 @@ class ModbusAgc150GensetConnector(BaseModbusConnector):
         # Populate the decimal factor dict.
         self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
 
+        # Set the sensorName field
+        self.telemetry_fields["sensorName"] = self.config.host
+
         self.log.debug("Modbus connector initialized.")
 
     def get_xml_field_name(self, field_name: str) -> str:

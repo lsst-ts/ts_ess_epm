@@ -90,6 +90,9 @@ class ModbusAgc150MainsConnector(BaseModbusConnector):
         # Populate the bitmask fields dict.
         self.bitmask_fields = AGC150_BITMASK_ADDRESS
 
+        # Set the sensorName field
+        self.telemetry_fields["sensorName"] = self.config.host
+
         self.log.debug("Modbus connector initialized.")
 
     async def save_field(self, input_name: str, read_value: ModbusValueType) -> None:

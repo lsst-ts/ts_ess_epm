@@ -81,6 +81,9 @@ class ModbusEaton9sxConnector(BaseModbusConnector):
         self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsEaton9sx}
         self.input_registers_dict = {e.name: e.value for e in InputRegistersEaton9sx}
 
+        # Set the sensorName field
+        self.telemetry_fields["sensorName"] = self.config.host
+
         self.log.debug("Modbus connector initialized.")
 
     async def process_telemetry(self) -> None:

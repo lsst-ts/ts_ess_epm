@@ -1,0 +1,1 @@
+Refactored agc150genset modbus connector to simplify the BaseModbusConnector.

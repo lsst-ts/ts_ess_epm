@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ["ModbusAgc150Connector"]
+__all__ = ["ModbusAgc150MainsConnector"]
 
 import asyncio
 import logging
@@ -29,21 +29,27 @@ import types
 from lsst.ts import salobj
 
 from ..enums import (
+    AGC150_BITMASK_ADDRESS,
     AGC150_DECIMAL_FACTOR,
-    ARRAY_FIELDS_AGC150,
-    DiscreteInputsAgc150,
-    InputRegistersAgc150,
+    DiscreteInputsAgc150Mains,
+    InputRegistersAgc150Mains,
 )
-from .base_modbus_connector import BaseModbusConnector
+from .base_modbus_connector import (
+    BaseModbusConnector,
+    ModbusValueType,
+)
+from .custom_exceptions import NotConnectedError
 
 # Wait time [s] for the telemetry task.
 TELEMETRY_WAIT = 1.0
 
-MODBUS_SETUP_FILE = pathlib.Path(__file__).resolve().parents[1] / "data" / "agc150_simulator_setup.json"
+MODBUS_SETUP_FILE = (
+    pathlib.Path(__file__).resolve().parents[1] / "data" / "agc150mains_modbus_simulator_setup.json"
+)
 
 
-class ModbusAgc150Connector(BaseModbusConnector):
-    """Class to connect to a modbus client for an AGC 150 controller.
+class ModbusAgc150MainsConnector(BaseModbusConnector):
+    """Class to connect to a modbus client for an AGC 150 Mains controller.
 
     Parameters
     ----------
@@ -72,19 +78,49 @@ class ModbusAgc150Connector(BaseModbusConnector):
         super().__init__(config, topics, log, simulation_mode)
 
         self.simulator_config_file = MODBUS_SETUP_FILE
-        self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
+        self.tel_agcMains150 = getattr(self.topics, "tel_agcMains150")
 
         # Populate the necessary Modbus address dicts.
-        self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150}
-        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150}
-
-        # Populate the array fields dict.
-        self.array_fields = ARRAY_FIELDS_AGC150
+        self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150Mains}
+        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150Mains}
 
         # Populate the decimal factor dict.
         self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
 
+        # Populate the bitmask fields dict.
+        self.bitmask_fields = AGC150_BITMASK_ADDRESS
+
+        # Set the sensorName field
+        self.telemetry_fields["sensorName"] = self.config.host
+
         self.log.debug("Modbus connector initialized.")
+
+    async def save_field(self, input_name: str, read_value: ModbusValueType) -> None:
+        """Process and store the value read from the modbus client.
+
+        If the field is a bitmask field, the modbus read value is a bitmask
+        where each bit corresponds to a different field. In this case,
+        individual bits are processed and saved separately.
+        Otherwise, the value is processed and saved directly.
+
+        Parameters
+        ----------
+        input_name : `str`
+            The modbus input name.
+        read_value : `int` | `bool`
+            The value read from the modbus client.
+        """
+        if input_name in self.bitmask_fields:
+            if not isinstance(read_value, int):
+                raise TypeError(
+                    f"Expected int value for bitmask field {input_name}, got {type(read_value).__name__}."
+                )
+            bitmask_dict = self.bitmask_fields[input_name]
+            for field_name, bitmask in bitmask_dict.items():
+                bit_value = bool(read_value & bitmask)
+                self.telemetry_fields[field_name] = bit_value
+        else:
+            await super().save_field(input_name, read_value)
 
     async def process_telemetry(self) -> None:
         """Read the different registers
@@ -99,13 +135,18 @@ class ModbusAgc150Connector(BaseModbusConnector):
             Raised when the client is not connected to the modbus server.
         """
         if self.connected:
-            for array_field in self.array_fields:
-                array_field_size = len(self.array_fields[array_field])
-                self.telemetry_fields[array_field] = [None for _ in range(array_field_size)]
             await self.read_discrete_inputs()
             await self.read_input_registers()
             self.log.debug(f"{self.telemetry_fields=}")
-            await self.tel_agcGenset150.set_write(**self.telemetry_fields)
+            await self.tel_agcMains150.set_write(**self.telemetry_fields)
+
+            await self.topics.evt_sensorStatus.set_write(
+                sensorName=self.config.host, sensorStatus=0, serverStatus=0
+            )
+
             await asyncio.sleep(TELEMETRY_WAIT)
         else:
-            raise RuntimeError("AGC150 connector is not connected.")
+            await self.topics.evt_sensorStatus.set_write(
+                sensorName=self.config.host, sensorStatus=0, serverStatus=1
+            )
+            raise NotConnectedError("AGC150 Mains connector is not connected.")

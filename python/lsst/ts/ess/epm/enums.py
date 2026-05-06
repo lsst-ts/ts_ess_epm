@@ -26,11 +26,13 @@ from enum import IntEnum, StrEnum
 class ModbusConnectors(StrEnum):
     """Modbus connectors."""
 
-    agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150Connector"
+    agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150GensetConnector"
+    agc150mains = "lsst.ts.ess.epm.modbus.ModbusAgc150MainsConnector"
+    eaton9sx = "lsst.ts.ess.epm.modbus.ModbusEaton9sxConnector"
     tma = "lsst.ts.ess.epm.modbus.ModbusTMAConnector"
 
 
-ARRAY_FIELDS_AGC150 = {
+AGC150_ARRAY_FIELDS = {
     "anyAlarmPMS": [
         "anyAlarmPMS1",
         "anyAlarmPMS2",
@@ -60,6 +62,36 @@ ARRAY_FIELDS_AGC150 = {
 
 AGC150_DECIMAL_FACTOR = {
     "applicationVersion": 0,
+    "mainsVoltageL1L2": 0,
+    "mainsVoltageL2L3": 0,
+    "mainsVoltageL3L1": 0,
+    "mainsVoltageL1N": 0,
+    "mainsVoltageL2N": 0,
+    "mainsVoltageL3N": 0,
+    "mainsFrequencyL1": 2,
+    "mainsFrequencyL2": 2,
+    "mainsFrequencyL3": 2,
+    "mainsCurrentL1": 0,
+    "mainsCurrentL2": 0,
+    "mainsCurrentL3": 0,
+    "mainsPowerL1": 0,
+    "mainsPowerL2": 0,
+    "mainsPowerL3": 0,
+    "mainsPower": 0,
+    "mainsReactivePowerL1": 0,
+    "mainsReactivePowerL2": 0,
+    "mainsReactivePowerL3": 0,
+    "mainsReactivePower": 0,
+    "mainsApparentPowerL1": 0,
+    "mainsApparentPowerL2": 0,
+    "mainsApparentPowerL3": 0,
+    "mainsApparentPower": 0,
+    "mainsExportReactiveEnergyCounterTotal": 0,
+    "mainsExportActiveEnergyCounterDay": 0,
+    "mainsExportActiveEnergyCounterWeek": 0,
+    "mainsExportActiveEnergyCounterMonth": 0,
+    "mainsExportActiveEnergyCounterTotal": 0,
+    "mainsPF": 2,
     "generatorVoltageL1L2": 0,
     "generatorVoltageL2L3": 0,
     "generatorVoltageL3L1": 0,
@@ -129,7 +161,6 @@ AGC150_DECIMAL_FACTOR = {
     "multiInput21": 0,
     "multiInput22": 0,
     "multiInput23": 0,
-    "mainsPower": 0,
     "engineSpeed": 0,
     "engineCoolantTemperature": 1,
     "engineOilPressure": 2,
@@ -168,7 +199,9 @@ AGC150_DECIMAL_FACTOR = {
     "ambientAirTemperature": 1,
     "exhaustTemperatureRight": 1,
     "exhaustTemperatureLeft": 1,
-    "windingTemperature": 0,
+    "windingTemperature1": 0,
+    "windingTemperature2": 0,
+    "windingTemperature3": 0,
     "auxiliaryAnalogInfo": 0,
     "engineTurbocharger1CompressorOutletTemperature": 0,
     "engineIntercoolerTemperature": 0,
@@ -178,8 +211,89 @@ AGC150_DECIMAL_FACTOR = {
     "totalFuelGasseous": 1,
 }
 
+# Bit address mapping for AGC150 controller registers.
+#
+# This dictionary defines bit positions (as bit masks) for various input
+# registers that share a single Modbus address but represent multiple boolean
+# values. As modbus registers are typically 16 bits, each bit can represent
+# a different boolean state or alarm condition. The keys of the dictionary
+# correspond to the register names that define a single address,
+# and the values are dictionaries mapping specific conditions to
+# their respective bit masks.
+#
+# Usage:
+#   if modbus_response & (
+#       AGC150_BITMASK_ADDRESS["acAlarms1"]["reversePowerMains1"]
+#   ):
+#       # alarm is active
+AGC150_BITMASK_ADDRESS = {
+    "acAlarms1": {
+        "reversePowerMains1": 1 << 0,
+        "reversePowerMains2": 1 << 1,
+        "reversePowerMains3": 1 << 2,
+        "overcurrentMains1": 1 << 3,
+        "overcurrentMains2": 1 << 4,
+        "overcurrentMains3": 1 << 5,
+        "overcurrentMains4": 1 << 6,
+        "voltDepOvercurrentMains": 1 << 8,
+        "shortCircuitMains1": 1 << 9,
+        "shortCircuitMains2": 1 << 10,
+        "overvoltageMains1": 1 << 11,
+        "overvoltageMains2": 1 << 12,
+        "undervoltageMains1": 1 << 13,
+        "undervoltageMains2": 1 << 14,
+        "undervoltageMains3": 1 << 15,
+    },
+    "acAlarms2": {
+        "overfrequencyMains1": 1 << 0,
+        "overfrequencyMains2": 1 << 1,
+        "overfrequencyMains3": 1 << 2,
+        "underfrequencyMains1": 1 << 3,
+        "underfrequencyMains2": 1 << 4,
+        "underfrequencyMains3": 1 << 5,
+        "overvoltageBusbar1": 1 << 6,
+        "overvoltageBusbar2": 1 << 7,
+        "overvoltageBusbar3": 1 << 8,
+        "undervoltageBusbar1": 1 << 9,
+        "undervoltageBusbar2": 1 << 10,
+        "undervoltageBusbar3": 1 << 11,
+        "undervoltageBusbar4": 1 << 12,
+        "overfrequencyBusbar1": 1 << 13,
+        "overfrequencyBusbar2": 1 << 14,
+        "overfrequencyBusbar3": 1 << 15,
+    },
+    "acAlarms3": {
+        "underfrequencyBusbar1": 1 << 0,
+        "underfrequencyBusbar2": 1 << 1,
+        "underfrequencyBusbar3": 1 << 2,
+        "underfrequencyBusbar4": 1 << 3,
+        "unbalanceCurrent": 1 << 12,
+        "unbalanceVoltage": 1 << 13,
+    },
+    "acAlarms4": {
+        "directionalOvercurrent1": 1 << 4,
+        "directionalOvercurrent2": 1 << 5,
+        "busbarVoltageUnbalance": 1 << 6,
+    },
+    "acAlarms5": {
+        "tieBreakerExternalTrip": 1 << 8,
+        "mainsBreakerExternalTrip": 1 << 9,
+    },
+    "alarms1": {
+        "synchronizingWindow": 1 << 0,
+        "synchronizingWindowFailureTB": 1 << 1,
+        "synchronizingWindowFailureMB": 1 << 2,
+        "tieBreakerOpenFailure": 1 << 4,
+        "tieBreakerCloseFailure": 1 << 5,
+        "tieBreakerPositionFailure": 1 << 6,
+        "mainsBreakerOpenFailure": 1 << 7,
+        "mainsBreakerCloseFailure": 1 << 8,
+        "mainsBreakerPositionFailure": 1 << 9,
+    },
+}
 
-class DiscreteInputsAgc150(IntEnum):
+
+class DiscreteInputsAgc150Genset(IntEnum):
     gbPositionOn = 0
     mbPositionOn = 1
     running = 3
@@ -221,7 +335,7 @@ class DiscreteInputsAgc150(IntEnum):
     anyMainsSyncInhibit = 54
 
 
-class InputRegistersAgc150(IntEnum):
+class InputRegistersAgc150Genset(IntEnum):
     applicationVersion = 500
     generatorVoltageL1L2 = 501
     generatorVoltageL2L3 = 502
@@ -341,6 +455,82 @@ class InputRegistersAgc150(IntEnum):
     engineTotalFuel = 639
     tripFuelGasseous = 640
     totalFuelGasseous = 641
+
+
+class DiscreteInputsAgc150Mains(IntEnum):
+    tbPositionOn = 0
+    mbPositionOn = 1
+    busBarVoltageFrequencyOk = 4
+    mainsFailure = 5
+    blockMode = 6
+    semiAutoMode = 8
+    autoMode = 9
+    testMode = 10
+    tbPositionOff = 11
+    mbPositionOff = 12
+    island = 13
+    automaticMainsFailure = 14
+    peakShaving = 15
+    fixedPower = 16
+    mainsPowerExport = 17
+    loadTakeover = 18
+    anyAlarmMains = 28
+
+
+class InputRegistersAgc150Mains(IntEnum):
+    mainsVoltageL1L2 = 501
+    mainsVoltageL2L3 = 502
+    mainsVoltageL3L1 = 503
+    mainsVoltageL1N = 504
+    mainsVoltageL2N = 505
+    mainsVoltageL3N = 506
+    mainsFrequencyL1 = 507
+    mainsFrequencyL2 = 508
+    mainsFrequencyL3 = 509
+    mainsCurrentL1 = 513
+    mainsCurrentL2 = 514
+    mainsCurrentL3 = 515
+    mainsPowerL1 = 516
+    mainsPowerL2 = 517
+    mainsPowerL3 = 518
+    mainsPower = 519
+    mainsReactivePowerL1 = 520
+    mainsReactivePowerL2 = 521
+    mainsReactivePowerL3 = 522
+    mainsReactivePower = 523
+    mainsApparentPowerL1 = 524
+    mainsApparentPowerL2 = 525
+    mainsApparentPowerL3 = 526
+    mainsApparentPower = 527
+    mainsExportReactiveEnergyCounterTotal = 528
+    mainsExportActiveEnergyCounterDay = 530
+    mainsExportActiveEnergyCounterWeek = 532
+    mainsExportActiveEnergyCounterMonth = 534
+    mainsExportActiveEnergyCounterTotal = 536
+    mainsPF = 538
+    busBVoltageL1L2 = 539
+    busBVoltageL2L3 = 540
+    busBVoltageL3L1 = 541
+    busBVoltageL1N = 542
+    busBVoltageL2N = 543
+    busBVoltageL3N = 544
+    busBFrequencyL1 = 545
+    busBFrequencyL2 = 546
+    busBFrequencyL3 = 547
+    numberAlarms = 558
+    numberUnacknowledgedAlarms = 559
+    numberActiveAcknowledgedAlarms = 560
+    numberMBOperations = 564
+    multiInput20 = 583
+    multiInput21 = 584
+    multiInput22 = 585
+    multiInput23 = 587
+    acAlarms1 = 1000
+    acAlarms2 = 1001
+    acAlarms3 = 1002
+    acAlarms4 = 1003
+    acAlarms5 = 1004
+    alarms1 = 1005
 
 
 class TMASector(StrEnum):
@@ -486,3 +676,84 @@ TMA_SENSOR_DICT: dict[TMASector, list[TMASensorInfo]] = {
         TMASensorInfo(code="DS23", subsector="MT", coordinate="12", coil=33791, holding_register=433791),
     ],
 }
+
+
+class DiscreteInputsEaton9sx(IntEnum):
+    loadProtectedStatus = 1024
+    upsCoupled = 1025
+    unitGeneralAlarm = 1026
+    configurationFirmwareFault = 1027
+    upsInBackupStatus = 1028
+    batteryLowWarning = 1029
+    lowBattery = 1030
+    communicationFault = 1033
+    upsOverload = 1034
+    emergencyStop = 1035
+    batteryToBeChecked = 1037
+    deviceVerificationFault = 1038
+    upsClass = 1041
+    manualBypassPresent = 1045
+    modeEco = 1047
+    batteryPresent = 1056
+    batteryTestFault = 1058
+    wiringFault = 1090
+    main1VoltageOutOfTolerance = 1096
+    main1FuseFault = 1097
+    chargerOverTemperatureFault = 1098
+    mainFrequencyTolerance = 1099
+    redundancyLost = 1111
+    maintenancePosition = 1121
+    main2Overload = 1125
+    outputOnBypass = 1127
+    main2FrequencyOutOfTolerance = 1129
+    phaseM2OutOfTolerance = 1131
+    internalFault = 1136
+    main2InternalFault = 1145
+    chargerGeneralFault = 1168
+    batteryCharge1 = 1169
+    batteryCharge2 = 1171
+    inverterMajorFault = 1217
+    iverterOverload = 1218
+    inverterOverTemperature = 1226
+    shortCircuit = 1265
+    electronicPowerSupplyFault = 1286
+    bypassWiringFault = 1287
+
+
+class InputRegistersEaton9sx(IntEnum):
+    currentPhase1Output = 265
+    currentPhase2Output = 266
+    currentPhase3Output = 267
+    voltagePhase1Main2 = 286
+    voltagePhase2Main2 = 287
+    voltagePhase3Main2 = 288
+    outputVoltage1N = 292
+    outputVoltage2N = 293
+    outputVoltage3N = 294
+    batteryVoltage = 301
+    outputActivePowerPhase1 = 304
+    outputActivePowerPhase2 = 305
+    outputActivePowerPhase3 = 306
+    outputApparentPowerPhase1 = 307
+    outputApparentPowerPhase2 = 308
+    outputApparentPowerPhase3 = 309
+    outputTotalActivePower = 310
+    outputTotalApparentPower = 311
+    outputLoadLevel = 313
+    powerFactory = 317
+    main1Frequency = 318
+    main2Frequency = 320
+    outputFrequency = 321
+    batteryBackupTime = 329
+    batteryChargingLevel = 331
+    voltageMain1Phase1 = 336
+    voltageMain1Phase2 = 337
+    voltageMain1Phase3 = 338
+    manufacturerName = 416
+    productName = 424
+    upsModel = 432
+    serialNumber = 440
+    partNumber = 448
+    nominalApparentPower = 521
+    nominalActivePower = 529
+    nominalBatteryVoltage = 531

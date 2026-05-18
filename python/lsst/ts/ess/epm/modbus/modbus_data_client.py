@@ -25,7 +25,6 @@ import importlib
 import logging
 import types
 import typing
-from typing import Type
 
 import yaml
 
@@ -36,7 +35,7 @@ from ..enums import ModbusConnectors
 from .base_modbus_connector import BaseModbusConnector
 
 
-def load_class(path: str) -> Type:
+def load_class(path: str) -> typing.Type:
     module_path, class_name = path.rsplit(".", 1)
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
@@ -83,7 +82,7 @@ class ModbusDataClient(BaseReadLoopDataClient):
         )
 
         connector_class_path = ModbusConnectors[config.device_type].value
-        ConnectorClass: Type[BaseModbusConnector] = load_class(connector_class_path)
+        ConnectorClass: typing.Type[BaseModbusConnector] = load_class(connector_class_path)
         self.modbus_connector = ConnectorClass(
             config=config,
             topics=topics,

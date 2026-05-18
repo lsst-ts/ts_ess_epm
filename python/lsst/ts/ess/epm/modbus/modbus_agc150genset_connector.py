@@ -19,38 +19,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ["ModbusAgc150Connector"]
+__all__ = ["ModbusAgc150GensetConnector"]
 
 import asyncio
 import logging
 import pathlib
 import types
-from typing import Union
-
-from pymodbus.client import AsyncModbusTcpClient
 
 from lsst.ts import salobj
 
 from ..enums import (
+    AGC150_ARRAY_FIELDS,
     AGC150_DECIMAL_FACTOR,
-    ARRAY_FIELDS_AGC150,
-    DiscreteInputsAgc150,
-    InputRegistersAgc150,
+    DiscreteInputsAgc150Genset,
+    InputRegistersAgc150Genset,
 )
-from .base_modbus_connector import BaseModbusConnector
-from .modbus_simulator import ModbusSimulator
-
-ModbusValueType = Union[int, float, bool, None]
-FieldValueType = Union[ModbusValueType, list[ModbusValueType]]
+from .base_modbus_connector import (
+    BaseModbusConnector,
+    ModbusValueType,
+)
+from .custom_exceptions import NotConnectedError
 
 # Wait time [s] for the telemetry task.
 TELEMETRY_WAIT = 1.0
 
-MODBUS_SETUP_FILE = pathlib.Path(__file__).resolve().parents[1] / "data" / "agc150_simulator_setup.json"
+MODBUS_SETUP_FILE = (
+    pathlib.Path(__file__).resolve().parents[1] / "data" / "agc150genset_modbus_simulator_setup.json"
+)
 
 
-class ModbusAgc150Connector(BaseModbusConnector):
-    """Class to connect to a modbus client for an AGC 150 controller.
+class ModbusAgc150GensetConnector(BaseModbusConnector):
+    """Class to connect to a modbus client for an AGC 150 Genset controller.
 
     Parameters
     ----------
@@ -77,52 +76,72 @@ class ModbusAgc150Connector(BaseModbusConnector):
         simulation_mode: int = 0,
     ) -> None:
         super().__init__(config, topics, log, simulation_mode)
-        self.simulator = (
-            ModbusSimulator(log=log, json_file=MODBUS_SETUP_FILE, modbus_device=config.device_type)
-            if simulation_mode == 1
-            else None
-        )
-        self.host = config.host if self.simulator is None else self.simulator.host
-        self.port = config.port if self.simulator is None else self.simulator.port
+
+        self.simulator_config_file = MODBUS_SETUP_FILE
         self.tel_agcGenset150 = getattr(self.topics, "tel_agcGenset150")
 
         # Populate the necessary Modbus address dicts.
-        self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150}
-        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150}
+        self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150Genset}
+        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150Genset}
 
         # Populate the array fields dict.
-        self.array_fields = ARRAY_FIELDS_AGC150
+        self.array_fields = AGC150_ARRAY_FIELDS
 
         # Populate the decimal factor dict.
         self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
 
+        # Set the sensorName field
+        self.telemetry_fields["sensorName"] = self.config.host
+
         self.log.debug("Modbus connector initialized.")
 
-    async def connect(self) -> None:
-        """Connect to the modbus client."""
-        if not self.connected:
-            if self.simulator is not None:
-                await self.simulator.start()
-            self.client = AsyncModbusTcpClient(
-                self.host,
-                port=self.port,
-            )
-            await self.client.connect()
-            if self.client.connected:
-                self.log.info("Client connected.")
+    def get_xml_field_name(self, field_name: str) -> str:
+        """Get the XML name for a modbus field name.
 
-    async def disconnect(self) -> None:
-        """Disconnect from the modbus client."""
-        if self.connected:
-            try:
-                self.client.close()
-            except Exception:
-                pass
-            finally:
-                self.client = None
-            self.log.info("Modbus client is closed.")
-            if self.simulator is not None:
-                await self.simulator.stop()
+        If the field is part of an array, the number
+        is removed to get the XML field name.
+        For instance, anyAlarmPMS1 -> anyAlarmPMS
+
+        Parameters
+        ----------
+        field_name : `str`
+            The modbus field name.
+
+        Returns
+        -------
+        str
+            The XML field name.
+        """
+
+        xml_field_name = field_name
+        for array_field, array in self.array_fields.items():
+            if field_name in array:
+                xml_field_name = array_field
+                break
+        return xml_field_name
+
+    async def save_field(self, input_name: str, read_value: ModbusValueType) -> None:
+        """Process and store the value read from the modbus client.
+
+        If the field is part of an array, it will be stored in the
+        correct index of the array field. Otherwise, it will be
+        stored directly in the telemetry fields dict.
+
+        Parameters
+        ----------
+        input_name : `str`
+            The modbus input name.
+        read_value : `int` | `bool`
+            The value read from the modbus client.
+        """
+        processed_value = self.process_modbus_value(input_name, read_value)
+        field_name = self.get_xml_field_name(input_name)
+        field = self.telemetry_fields.get(field_name)
+        if isinstance(field, list):
+            index = self.array_fields[field_name].index(input_name)
+            field[index] = processed_value
+        else:
+            self.telemetry_fields[field_name] = processed_value
 
     async def process_telemetry(self) -> None:
         """Read the different registers
@@ -144,6 +163,14 @@ class ModbusAgc150Connector(BaseModbusConnector):
             await self.read_input_registers()
             self.log.debug(f"{self.telemetry_fields=}")
             await self.tel_agcGenset150.set_write(**self.telemetry_fields)
+
+            await self.topics.evt_sensorStatus.set_write(
+                sensorName=self.config.host, sensorStatus=0, serverStatus=0
+            )
+
             await asyncio.sleep(TELEMETRY_WAIT)
         else:
-            raise RuntimeError("AGC150 connector is not connected.")
+            await self.topics.evt_sensorStatus.set_write(
+                sensorName=self.config.host, sensorStatus=0, serverStatus=1
+            )
+            raise NotConnectedError("AGC150 Genset connector is not connected.")

@@ -1,0 +1,122 @@
+{
+  "server_list": {
+    "server": {
+      "comm": "tcp",
+      "host": "0.0.0.0",
+      "port": 502,
+      "framer": "socket",
+      "identity": {
+        "VendorName": "pymodbus",
+        "ProductCode": "PM",
+        "VendorUrl": "https://github.com/pymodbus-dev/pymodbus",
+        "ProductName": "pymodbus Server",
+        "ModelName": "pymodbus Server",
+        "MajorMinorRevision": "3.1.0"
+      }
+    }
+  },
+  "device_list": {
+    "agc150mains": {
+      "setup": {
+        "co size": 0,
+        "di size": 1000,
+        "hr size": 0,
+        "ir size": 2000,
+        "shared blocks": true,
+        "type exception": true,
+        "defaults": {
+          "value": {
+            "bits": 0,
+            "uint16": 0,
+            "uint32": 0,
+            "float32": 0.0,
+            "string": " "
+          },
+          "action": {
+            "bits": null,
+            "uint16": null,
+            "uint32": null,
+            "float32": null,
+            "string": null
+          }
+        }
+      },
+      "invalid": [],
+      "write": [],
+      "bits": [
+        {"addr": 0, "value": 42003, "bit_order_for_value":  "0b1010010000010011 = 'peakShaving': True, 'automaticMainsFailure': False, 'island': True, 'mbPositionOff': False, 'tbPositionOff': False, 'testMode': True, 'autoMode': False, 'semiAutoMode': False, UNUSED, 'blockMode': False, 'mainsFailure': False, 'busBarVoltageFrequencyOk': True, UNUSED, UNUSED, 'mbPositionOn': True, 'tbPositionOn': True"},
+        {"addr": 1, "value": 7, "bit_order_for_value":  "0b0000000000000111 = UNUSED, UNUSED, UNUSED, 'anyAlarmMains': False, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, 'loadTakeover': True, 'mainsPowerExport': True, 'fixedPower': True"}
+      ],
+      "uint16": [
+        { "addr": 501, "value": 10, "name": "mainsVoltageL1L2" },
+        { "addr": 502, "value": 10, "name": "mainsVoltageL2L3" },
+        { "addr": 503, "value": 10, "name": "mainsVoltageL3L1" },
+        { "addr": 504, "value": 10, "name": "mainsVoltageL1N" },
+        { "addr": 505, "value": 10, "name": "mainsVoltageL2N" },
+        { "addr": 506, "value": 10, "name": "mainsVoltageL3N" },
+        { "addr": 507, "value": 10, "name": "mainsFrequencyL1" },
+        { "addr": 508, "value": 10, "name": "mainsFrequencyL2" },
+        { "addr": 509, "value": 10, "name": "mainsFrequencyL3" },
+        { "addr": 513, "value": 10, "name": "mainsCurrentL1" },
+        { "addr": 514, "value": 10, "name": "mainsCurrentL2" },
+        { "addr": 515, "value": 10, "name": "mainsCurrentL3" },
+
+        { "addr": 516, "value": 10, "name": "mainsPowerL1" },
+        { "addr": 517, "value": 10, "name": "mainsPowerL2" },
+        { "addr": 518, "value": 10, "name": "mainsPowerL3" },
+        { "addr": 519, "value": 10, "name": "mainsPower" },
+
+        { "addr": 520, "value": 10, "name": "mainsReactivePowerL1" },
+        { "addr": 521, "value": 10, "name": "mainsReactivePowerL2" },
+        { "addr": 522, "value": 10, "name": "mainsReactivePowerL3" },
+        { "addr": 523, "value": 10, "name": "mainsReactivePower" },
+
+        { "addr": 524, "value": 10, "name": "mainsApparentPowerL1" },
+        { "addr": 525, "value": 10, "name": "mainsApparentPowerL2" },
+        { "addr": 526, "value": 10, "name": "mainsApparentPowerL3" },
+        { "addr": 527, "value": 10, "name": "mainsApparentPower" },
+
+        { "addr": 528, "value": 10, "name": "mainsExportReactiveEnergyCounterTotal" },
+        { "addr": 530, "value": 10, "name": "mainsExportActiveEnergyCounterDay" },
+        { "addr": 532, "value": 10, "name": "mainsExportActiveEnergyCounterWeek" },
+        { "addr": 534, "value": 10, "name": "mainsExportActiveEnergyCounterMonth" },
+        { "addr": 536, "value": 10, "name": "mainsExportActiveEnergyCounterTotal" },
+        { "addr": 538, "value": 10, "name": "mainsPF" },
+
+        { "addr": 539, "value": 10, "name": "busBVoltageL1L2" },
+        { "addr": 540, "value": 10, "name": "busBVoltageL2L3" },
+        { "addr": 541, "value": 10, "name": "busBVoltageL3L1" },
+        { "addr": 542, "value": 10, "name": "busBVoltageL1N" },
+        { "addr": 543, "value": 10, "name": "busBVoltageL2N" },
+        { "addr": 544, "value": 10, "name": "busBVoltageL3N" },
+
+        { "addr": 545, "value": 10, "name": "busBFrequencyL1" },
+        { "addr": 546, "value": 10, "name": "busBFrequencyL2" },
+        { "addr": 547, "value": 10, "name": "busBFrequencyL3" },
+
+        { "addr": 558, "value": 10, "name": "numberAlarms" },
+        { "addr": 559, "value": 10, "name": "numberUnacknowledgedAlarms" },
+        { "addr": 560, "value": 10, "name": "numberActiveAcknowledgedAlarms" },
+
+        { "addr": 563, "value": 10, "name": "numberTBOperations" },
+        { "addr": 564, "value": 10, "name": "numberMBOperations" },
+
+        { "addr": 583, "value": 10, "name": "multiInput20" },
+        { "addr": 584, "value": 10, "name": "multiInput21" },
+        { "addr": 585, "value": 10, "name": "multiInput22" },
+        { "addr": 587, "value": 10, "name": "multiInput23" },
+
+        { "addr": 1000, "value": 32124, "name": "acAlarms1" },
+        { "addr": 1001, "value": 32124, "name": "acAlarms2" },
+        { "addr": 1002, "value": 32124, "name": "acAlarms3" },
+        { "addr": 1003, "value": 32124, "name": "acAlarms4" },
+        { "addr": 1004, "value": 32124, "name": "acAlarms5" },
+        { "addr": 1005, "value": 32124, "name": "alarms1" }
+      ],
+      "uint32": [],
+      "float32": [],
+      "string": [],
+      "repeat": []
+    }
+  }
+}

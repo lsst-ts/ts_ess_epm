@@ -1,1 +1,0 @@
-Made it possible to read multiple Modbus addresses at once.

@@ -1,1 +1,0 @@
-Added the sensorName field for publishing the agcGenset150, agcMains150 and e9sxups telemetry.

@@ -8,6 +8,25 @@ Version History
 
 .. towncrier release notes start
 
+v0.6.0 (2026-05-18)
+===================
+
+New Features
+------------
+
+- Added a Modbus connector for the TMA temperature sensors. (`OSW-2226 <https://rubinobs.atlassian.net//browse/OSW-2226>`_)
+- Added agc150mains modbus connector and enumerations. (`OSW-2250 <https://rubinobs.atlassian.net//browse/OSW-2250>`_)
+- Added eaton9sx modbus connector and enumerations. (`OSW-2250 <https://rubinobs.atlassian.net//browse/OSW-2250>`_)
+
+
+Performance Enhancement
+-----------------------
+
+- Made it possible to read multiple Modbus addresses at once. (`OSW-2226 <https://rubinobs.atlassian.net//browse/OSW-2226>`_)
+- Refactored agc150genset modbus connector to simplify the BaseModbusConnector. (`OSW-2250 <https://rubinobs.atlassian.net//browse/OSW-2250>`_)
+- Added the sensorName field for publishing the agcGenset150, agcMains150 and e9sxups telemetry. (`OSW-2250 <https://rubinobs.atlassian.net//browse/OSW-2250>`_)
+
+
 v0.5.0 (2026-04-24)
 ===================
 

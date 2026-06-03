@@ -106,6 +106,7 @@ class SnmpDataClient(BaseReadLoopDataClient):
         self.mib_tree_holder = MibTreeHolder()
 
         self.device_type = self.config.device_type
+        self.sensor_name = self.config.host
 
         # Attributes for the SNMP requests.
         self.snmp_engine = SnmpEngine()
@@ -298,7 +299,7 @@ additionalProperties: false
         telemetry_topic = getattr(self.topics, f"tel_{self.device_type}")
         telemetry_dict: dict[str, typing.Any] = {
             "systemDescription": self.system_description,
-            "sensorName": self.config.host,
+            "sensorName": self.sensor_name,
         }
         telemetry_items = [
             i
@@ -452,7 +453,7 @@ additionalProperties: false
         temperature_array = temperatures + [math.nan] * (nelts - 2)
         timestamp = utils.current_tai()
         await self.topics.tel_temperature.set_write(
-            sensorName=self.config.host,
+            sensorName=self.sensor_name,
             timestamp=timestamp,
             temperatureItem=temperature_array,
             numChannels=2,
@@ -461,7 +462,7 @@ additionalProperties: false
 
         for index, relative_humidity in enumerate(relative_humidities):
             await self.topics.tel_relativeHumidity.set_write(
-                sensorName=self.config.host,
+                sensorName=self.sensor_name,
                 timestamp=timestamp,
                 relativeHumidityItem=relative_humidity,
                 location=f"relativeHumidity{index}",

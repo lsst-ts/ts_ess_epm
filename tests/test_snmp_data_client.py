@@ -148,6 +148,7 @@ class SnmpDataClientTestCase(unittest.IsolatedAsyncioTestCase):
         # and, if a list, of the expected length.
         for call_args in call_args_list:
             data_type = tel_topic.DataType()
+            assert data_type.sensorName != "localhost"
             for var in vars(data_type):
                 if var in call_args.kwargs:
                     call_arg = call_args.kwargs[var]

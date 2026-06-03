@@ -8,6 +8,15 @@ Version History
 
 .. towncrier release notes start
 
+v0.6.1 (2026-06-03)
+===================
+
+Performance Enhancement
+-----------------------
+
+- Made sure that all SNMP related telemetry topics always have the sensorName item equal to the configured host name of the SNMP server. (`OSW-2383 <https://rubinobs.atlassian.net//browse/OSW-2383>`_)
+
+
 v0.6.0 (2026-05-18)
 ===================
 

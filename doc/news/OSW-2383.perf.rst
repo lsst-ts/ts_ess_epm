@@ -1,1 +1,0 @@
-Made sure that all SNMP related telemetry topics always have the sensorName item equal to the configured host name of the SNMP server.

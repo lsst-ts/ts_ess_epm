@@ -30,7 +30,6 @@ from lsst.ts import salobj
 
 from ..enums import (
     AGC150_BITMASK_ADDRESS,
-    AGC150_DECIMAL_FACTOR,
     DiscreteInputsAgc150Mains,
     InputRegistersAgc150Mains,
 )
@@ -82,10 +81,10 @@ class ModbusAgc150MainsConnector(BaseModbusConnector):
 
         # Populate the necessary Modbus address dicts.
         self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150Mains}
-        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150Mains}
+        self.input_registers_dict = {e.name: e.address for e in InputRegistersAgc150Mains}
 
         # Populate the decimal factor dict.
-        self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
+        self.decimal_factor_dict = {e.name: e.address for e in InputRegistersAgc150Mains}
 
         # Populate the bitmask fields dict.
         self.bitmask_fields = AGC150_BITMASK_ADDRESS

@@ -30,7 +30,6 @@ from lsst.ts import salobj
 
 from ..enums import (
     AGC150_ARRAY_FIELDS,
-    AGC150_DECIMAL_FACTOR,
     DiscreteInputsAgc150Genset,
     InputRegistersAgc150Genset,
 )
@@ -82,13 +81,13 @@ class ModbusAgc150GensetConnector(BaseModbusConnector):
 
         # Populate the necessary Modbus address dicts.
         self.discrete_inputs_dict = {e.name: e.value for e in DiscreteInputsAgc150Genset}
-        self.input_registers_dict = {e.name: e.value for e in InputRegistersAgc150Genset}
+        self.input_registers_dict = {e.name: e.address for e in InputRegistersAgc150Genset}
 
         # Populate the array fields dict.
         self.array_fields = AGC150_ARRAY_FIELDS
 
         # Populate the decimal factor dict.
-        self.decimal_factor_dict = AGC150_DECIMAL_FACTOR
+        self.decimal_factor_dict = {e.name: e.decimal_factor for e in InputRegistersAgc150Genset}
 
         # Set the sensorName field
         self.telemetry_fields["sensorName"] = self.config.host
@@ -113,12 +112,10 @@ class ModbusAgc150GensetConnector(BaseModbusConnector):
             The XML field name.
         """
 
-        xml_field_name = field_name
         for array_field, array in self.array_fields.items():
             if field_name in array:
-                xml_field_name = array_field
-                break
-        return xml_field_name
+                return array_field
+        return field_name
 
     async def save_field(self, input_name: str, read_value: ModbusValueType) -> None:
         """Process and store the value read from the modbus client.

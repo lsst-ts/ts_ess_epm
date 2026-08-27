@@ -28,6 +28,7 @@ class ModbusConnectors(StrEnum):
 
     agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150GensetConnector"
     agc150mains = "lsst.ts.ess.epm.modbus.ModbusAgc150MainsConnector"
+    flowmeter = "lsst.ts.ess.epm.modbus.ModbusFlowMeterConnector"
     eaton9sx = "lsst.ts.ess.epm.modbus.ModbusEaton9sxConnector"
     tma = "lsst.ts.ess.epm.modbus.ModbusTMAConnector"
 

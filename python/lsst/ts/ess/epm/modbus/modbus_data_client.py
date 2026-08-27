@@ -82,13 +82,17 @@ class ModbusDataClient(BaseReadLoopDataClient):
         )
 
         connector_class_path = ModbusConnectors[config.device_type].value
-        ConnectorClass: typing.Type[BaseModbusConnector] = load_class(connector_class_path)
-        self.modbus_connector = ConnectorClass(
-            config=config,
-            topics=topics,
-            log=log,
-            simulation_mode=simulation_mode,
-        )
+        try:
+            ConnectorClass: typing.Type[BaseModbusConnector] = load_class(connector_class_path)
+            self.modbus_connector = ConnectorClass(
+                config=config,
+                topics=topics,
+                log=log,
+                simulation_mode=simulation_mode,
+            )
+        except Exception as ex:
+            log.error(f"Cannot load {connector_class_path}: {ex}.")
+            raise ex
 
     @classmethod
     def get_config_schema(cls) -> dict[str, typing.Any]:

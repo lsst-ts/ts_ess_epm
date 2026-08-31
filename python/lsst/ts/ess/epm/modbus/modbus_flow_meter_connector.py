@@ -56,7 +56,7 @@ class InputRegistersFlowMeter(enum.IntEnum):
     dateCode = 7320
 
 
-"""Telemetry loop cycle duration."""
+"""Telemetry loop cycle period in seconds."""
 TELEMETRY_WAIT = 2.0
 
 
@@ -97,7 +97,7 @@ class ModbusFlowMeterConnector(BaseModbusConnector):
     ----------
     config : `types.SimpleNamespace`
         The configuration.
-    topics : `types.SimpleNamespace`
+    topics : `salobj.Controller | types.SimpleNamespace`
         CSC topics.
     log : `logging.Logger`
         Logging instance.

@@ -13,11 +13,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
 from enum import Enum, IntEnum, StrEnum
@@ -28,6 +28,7 @@ class ModbusConnectors(StrEnum):
 
     agc150genset = "lsst.ts.ess.epm.modbus.ModbusAgc150GensetConnector"
     agc150mains = "lsst.ts.ess.epm.modbus.ModbusAgc150MainsConnector"
+    flowmeter = "lsst.ts.ess.epm.modbus.ModbusFlowMeterConnector"
     eaton9sx = "lsst.ts.ess.epm.modbus.ModbusEaton9sxConnector"
     tma = "lsst.ts.ess.epm.modbus.ModbusTMAConnector"
 

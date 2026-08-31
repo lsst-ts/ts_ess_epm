@@ -13,11 +13,11 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 __all__ = ["ModbusDataClient"]
 
@@ -82,13 +82,17 @@ class ModbusDataClient(BaseReadLoopDataClient):
         )
 
         connector_class_path = ModbusConnectors[config.device_type].value
-        ConnectorClass: typing.Type[BaseModbusConnector] = load_class(connector_class_path)
-        self.modbus_connector = ConnectorClass(
-            config=config,
-            topics=topics,
-            log=log,
-            simulation_mode=simulation_mode,
-        )
+        try:
+            ConnectorClass: typing.Type[BaseModbusConnector] = load_class(connector_class_path)
+            self.modbus_connector = ConnectorClass(
+                config=config,
+                topics=topics,
+                log=log,
+                simulation_mode=simulation_mode,
+            )
+        except Exception as ex:
+            log.error(f"Cannot load {connector_class_path}: {ex}.")
+            raise ex
 
     @classmethod
     def get_config_schema(cls) -> dict[str, typing.Any]:

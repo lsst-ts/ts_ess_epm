@@ -13,15 +13,16 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from .custom_exceptions import *
 from .modbus_agc150genset_connector import *
 from .modbus_agc150mains_connector import *
 from .modbus_data_client import *
+from .modbus_flow_meter_connector import ModbusFlowMeterConnector
 from .modbus_tma_connector import *
 from .modbus_eaton9sx_connector import *

@@ -1,6 +1,6 @@
 {
   "server_list": {
-    "server": {
+    "alt_server": {
       "comm": "tcp",
       "host": "0.0.0.0",
       "port": 501,

@@ -26,6 +26,7 @@ import pathlib
 import types
 from abc import ABC, abstractmethod
 
+from pymodbus import ModbusException
 from pymodbus.client import AsyncModbusTcpClient
 
 from lsst.ts import salobj
@@ -262,7 +263,12 @@ class BaseModbusConnector(ABC):
                     f"Reading {self.num_coils} coils starting at {input_address} for {input_name}."
                 )
                 response = await self.client.read_coils(address=input_address, count=self.num_coils)
-                await self.process_modbus_response_array(input_name, input_address, "Coil", response.bits)
+                if response.isError():
+                    raise ModbusException(
+                        f"Error reading {self.num_coils} coils from {input_address=} for {input_name}."
+                    )
+                else:
+                    await self.process_modbus_response_array(input_name, input_address, "Coil", response.bits)
         else:
             raise NotConnectedError()
 
@@ -288,9 +294,15 @@ class BaseModbusConnector(ABC):
                 response = await self.client.read_discrete_inputs(
                     address=input_address, count=self.num_discrete_inputs
                 )
-                await self.process_modbus_response_array(
-                    input_name, input_address, "Discrete input", response.bits
-                )
+                if response.isError():
+                    raise ModbusException(
+                        f"Error reading {self.num_discrete_inputs} discrete inputs "
+                        f"from {input_address=} for {input_name}."
+                    )
+                else:
+                    await self.process_modbus_response_array(
+                        input_name, input_address, "Discrete input", response.bits
+                    )
         else:
             raise NotConnectedError()
 
@@ -316,9 +328,15 @@ class BaseModbusConnector(ABC):
                 response = await self.client.read_holding_registers(
                     address=input_address, count=self.num_holding_registers
                 )
-                await self.process_modbus_response_array(
-                    input_name, input_address, "Holding register", response.registers
-                )
+                if response.isError():
+                    raise ModbusException(
+                        f"Error reading {self.num_holding_registers} holding registers "
+                        f"from {input_address=} for {input_name}."
+                    )
+                else:
+                    await self.process_modbus_response_array(
+                        input_name, input_address, "Holding register", response.registers
+                    )
         else:
             raise NotConnectedError()
 
@@ -344,9 +362,15 @@ class BaseModbusConnector(ABC):
                 response = await self.client.read_input_registers(
                     address=input_address, count=self.num_input_registers
                 )
-                await self.process_modbus_response_array(
-                    input_name, input_address, "Input register", response.registers
-                )
+                if response.isError():
+                    raise ModbusException(
+                        f"Error reading {self.num_input_registers} input registers "
+                        f"from {input_address=} for {input_name}."
+                    )
+                else:
+                    await self.process_modbus_response_array(
+                        input_name, input_address, "Input register", response.registers
+                    )
         else:
             raise NotConnectedError()
 

@@ -1,0 +1,1 @@
+Added handling of Modbus response errors.

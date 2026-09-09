@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-import enum
 import logging
 import types
 import unittest
@@ -189,19 +188,11 @@ class ModbusAgc150GensetConnectorTestCase(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(NotConnectedError):
                 await self.modbus_agc150_connector.process_telemetry()
 
-    async def test_enum_to_ranges(self) -> None:
-        class DummyEnum(enum.IntEnum):
-            ONE = 1
-            TWO = 2
-            THREE = 3
-            FOUR = 4
-            SIX = 6
-            SEVEN = 7
-            TEN = 10
-            THIRTEEN = 13
-            FOURTEEN = 14
-            FIFTEEN = 15
-
-        enum_as_dict = {v.name: v.value for v in DummyEnum}
+    async def test_dict_to_ranges(self) -> None:
+        enum_as_dict = {f"{value}": value for value in [1, 2, 3, 4, 6, 7, 10, 13, 14, 15]}
         ranges = await get_ranges_from_dict(enum_as_dict)
         assert ranges == [(1, 4), (6, 7), (10, 10), (13, 15)]
+
+        enum_as_dict = {f"{value}": value for value in range(1, 301)}
+        ranges = await get_ranges_from_dict(enum_as_dict)
+        assert ranges == [(1, 120), (121, 240), (241, 300)]

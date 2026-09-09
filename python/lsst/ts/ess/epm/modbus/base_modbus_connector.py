@@ -43,6 +43,10 @@ from .modbus_simulator import ModbusSimulator
 ModbusValueType = int | float | bool | None
 FieldValueType = ModbusValueType | list[ModbusValueType]
 
+# Maximum number of registers to return. This assumes float registers (2
+# bytes) and no float64 (4 bytes) registers.
+MAX_NUM_REGISTERS = 120
+
 
 async def get_ranges_from_dict(enum_as_dict: dict[str, int]) -> list[tuple[int, int]]:
     """Get ranges of consecutive values from a dictionary of enum names and
@@ -62,7 +66,25 @@ async def get_ranges_from_dict(enum_as_dict: dict[str, int]) -> list[tuple[int, 
     gaps = [[start_idx, end_idx] for start_idx, end_idx in zip(values, values[1:]) if start_idx + 1 < end_idx]
     edges = iter(values[:1] + sum(gaps, []) + values[-1:])
     ranges = list(zip(edges, edges))
-    return ranges
+
+    # Make sure no ranges longer than MAX_NUM_REGISTERS are returned.
+    ranges_to_return: list[tuple[int, int]] = []
+    for _range in ranges:
+        start_idx, end_idx = _range
+        if end_idx - start_idx < MAX_NUM_REGISTERS:
+            ranges_to_return.append(_range)
+        else:
+            new_start_idx = start_idx
+            new_end_idx = MAX_NUM_REGISTERS
+            while new_end_idx < end_idx:
+                ranges_to_return.append((new_start_idx, new_end_idx))
+                new_start_idx = new_end_idx + 1
+                new_end_idx += MAX_NUM_REGISTERS
+                if new_end_idx > end_idx:
+                    new_end_idx = end_idx
+            ranges_to_return.append((new_start_idx, new_end_idx))
+
+    return ranges_to_return
 
 
 class BaseModbusConnector(ABC):
@@ -156,8 +178,9 @@ class BaseModbusConnector(ABC):
         # Dict for converting ints to floats.
         self.decimal_factor_dict: dict[str, int] = {}
 
-        # Numbers of registers to read.
+        # Number of coils to read.
         self.num_coils = 1
+        # Number of discrete inputs to read.
         self.num_discrete_inputs = 1
 
     @property

@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+from .base_modbus_connector import *
 from .custom_exceptions import *
 from .modbus_agc150genset_connector import *
 from .modbus_agc150mains_connector import *

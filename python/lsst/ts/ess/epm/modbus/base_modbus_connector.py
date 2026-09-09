@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ["BaseModbusConnector", "ModbusValueType"]
+__all__ = ["BaseModbusConnector", "ModbusValueType", "get_ranges_from_dict"]
 
 import logging
 import pathlib
@@ -42,6 +42,27 @@ from .modbus_simulator import ModbusSimulator
 
 ModbusValueType = int | float | bool | None
 FieldValueType = ModbusValueType | list[ModbusValueType]
+
+
+async def get_ranges_from_dict(enum_as_dict: dict[str, int]) -> list[tuple[int, int]]:
+    """Get ranges of consecutive values from a dictionary of enum names and
+    values.
+
+    Parameters
+    ----------
+    enum_as_dict : `dict [ str, int ]`
+        Dictionary of enum names and values.
+
+    Returns
+    -------
+    `list [ tuple [ int, int ] ]`
+        List of tuples representing ranges of consecutive values.
+    """
+    values = [value for name, value in enum_as_dict.items()]
+    gaps = [[start_idx, end_idx] for start_idx, end_idx in zip(values, values[1:]) if start_idx + 1 < end_idx]
+    edges = iter(values[:1] + sum(gaps, []) + values[-1:])
+    ranges = list(zip(edges, edges))
+    return ranges
 
 
 class BaseModbusConnector(ABC):
@@ -78,6 +99,12 @@ class BaseModbusConnector(ABC):
         Dict of direct input (name, address) pairs.
     input_registers_dict : `dict[str, int]`
         Dict of input register (name, address) pairs.
+    holding_register_ranges: `list[tuple[int, int]]`
+        The list of ranges of holding registers to read.
+    input_register_ranges: `list[tuple[int, int]]`
+        The list of ranges of input registers to read.
+    process_all_registers_one_by_one: bool
+        Whether to process all registers one by one.
     telemetry_fields : `dict[str, FieldValueType]`
         Dict of telemetry fields (name, value) pairs. This is used to populate
         the values for the salobj telemetry message.
@@ -89,12 +116,8 @@ class BaseModbusConnector(ABC):
         values to telemetry decimal values.
     num_coils : `int`
         The number of coils to read.
-    num_holding_registers : `int`
-        The number of holding_registers to read.
     num_discrete_inputs : `int`
         The number of discrete inputs to read.
-    num_input_registers : `int`
-        The number of input registers to read.
     """
 
     def __init__(
@@ -120,6 +143,13 @@ class BaseModbusConnector(ABC):
         self.discrete_inputs_dict: dict[str, int] = {}
         self.input_registers_dict: dict[str, int] = {}
 
+        # Lists of register ranges.
+        self.holding_register_ranges: list[tuple[int, int]] = []
+        self.input_register_ranges: list[tuple[int, int]] = []
+
+        # Process all registers one by one or not?
+        self.process_all_registers_one_by_one = True
+
         # Dicts to help save and send telemetry.
         self.telemetry_fields: dict[str, FieldValueType] = {}
 
@@ -128,9 +158,7 @@ class BaseModbusConnector(ABC):
 
         # Numbers of registers to read.
         self.num_coils = 1
-        self.num_holding_registers = 1
         self.num_discrete_inputs = 1
-        self.num_input_registers = 1
 
     @property
     def connected(self) -> bool:
@@ -320,20 +348,32 @@ class BaseModbusConnector(ABC):
             raise NoHoldingRegistersDefinedError()
 
         if self.connected:
-            for input_name, input_address in self.holding_registers_dict.items():
-                self.log.debug(
-                    f"Reading {self.num_holding_registers} holding registers "
-                    f"starting at {input_address} for {input_name}."
-                )
+            if len(self.holding_register_ranges) == 0:
+                self.holding_register_ranges = await get_ranges_from_dict(self.holding_registers_dict)
+            for start_idx, end_idx in self.holding_register_ranges:
+                num_holding_registers = end_idx - start_idx + 1
+                self.log.debug(f"Reading {num_holding_registers} holding registers starting at {start_idx}.")
                 response = await self.client.read_holding_registers(
-                    address=input_address, count=self.num_holding_registers
+                    address=start_idx, count=num_holding_registers
                 )
                 if response.isError():
                     raise ModbusException(
-                        f"Error reading {self.num_holding_registers} holding registers "
-                        f"from {input_address=} for {input_name}."
+                        f"Error reading {num_holding_registers} holding registers from {start_idx=}."
                     )
+                elif self.process_all_registers_one_by_one:
+                    keys = list(self.holding_registers_dict.keys())
+                    for idx in range(start_idx, end_idx + 1):
+                        input_name = keys[idx - start_idx]
+                        input_address = self.holding_registers_dict[input_name]
+                        value = response.registers[idx - start_idx]
+                        await self.process_modbus_response_array(
+                            input_name, input_address, "Holding register", value
+                        )
                 else:
+                    input_name = list(self.holding_registers_dict.keys())[
+                        list(self.holding_registers_dict.values()).index(start_idx)
+                    ]
+                    input_address = start_idx
                     await self.process_modbus_response_array(
                         input_name, input_address, "Holding register", response.registers
                     )
@@ -354,23 +394,36 @@ class BaseModbusConnector(ABC):
             raise NoInputRegistersDefinedError()
 
         if self.connected:
-            for input_name, input_address in self.input_registers_dict.items():
-                self.log.debug(
-                    f"Reading {self.num_input_registers} input registers "
-                    f"starting at {input_address} for {input_name}."
-                )
+            if len(self.input_register_ranges) == 0:
+                self.input_register_ranges = await get_ranges_from_dict(self.input_registers_dict)
+            for start_idx, end_idx in self.input_register_ranges:
+                num_input_registers = end_idx - start_idx + 1
+                self.log.debug(f"Reading {num_input_registers} input registers starting at {start_idx}.")
                 response = await self.client.read_input_registers(
-                    address=input_address, count=self.num_input_registers
+                    address=start_idx, count=num_input_registers
                 )
                 if response.isError():
                     raise ModbusException(
-                        f"Error reading {self.num_input_registers} input registers "
-                        f"from {input_address=} for {input_name}."
+                        f"Error reading {num_input_registers} input registers from {start_idx=}."
                     )
+                elif self.process_all_registers_one_by_one:
+                    keys = list(self.input_registers_dict.keys())
+                    for idx in range(start_idx, end_idx + 1):
+                        input_name = keys[idx - start_idx]
+                        input_address = self.input_registers_dict[input_name]
+                        value = [response.registers[idx - start_idx]]
+                        await self.process_modbus_response_array(
+                            input_name, input_address, "Input register", value
+                        )
                 else:
+                    input_name = list(self.input_registers_dict.keys())[
+                        list(self.input_registers_dict.values()).index(start_idx)
+                    ]
+                    input_address = start_idx
                     await self.process_modbus_response_array(
                         input_name, input_address, "Input register", response.registers
                     )
+
         else:
             raise NotConnectedError()
 

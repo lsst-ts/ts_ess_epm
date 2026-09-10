@@ -29,6 +29,7 @@ from lsst.ts.ess.epm.modbus import (
     NoCoilsDefinedError,
     NoHoldingRegistersDefinedError,
     NotConnectedError,
+    get_ranges_from_dict,
 )
 
 
@@ -186,3 +187,12 @@ class ModbusAgc150GensetConnectorTestCase(unittest.IsolatedAsyncioTestCase):
 
             with self.assertRaises(NotConnectedError):
                 await self.modbus_agc150_connector.process_telemetry()
+
+    async def test_dict_to_ranges(self) -> None:
+        enum_as_dict = {f"{value}": value for value in [1, 2, 3, 4, 6, 7, 10, 13, 14, 15]}
+        ranges = await get_ranges_from_dict(enum_as_dict)
+        assert ranges == [(1, 4), (6, 7), (10, 10), (13, 15)]
+
+        enum_as_dict = {f"{value}": value for value in range(1, 301)}
+        ranges = await get_ranges_from_dict(enum_as_dict)
+        assert ranges == [(1, 120), (121, 240), (241, 300)]

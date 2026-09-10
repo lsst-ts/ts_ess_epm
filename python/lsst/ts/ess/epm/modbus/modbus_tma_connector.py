@@ -50,13 +50,17 @@ class ModbusTMAConnector(BaseModbusConnector):
         super().__init__(config, topics, log, simulation_mode)
         self.simulator_config_file = MODBUS_SETUP_FILE
 
-        # Populate the necessary dicts.
+        # Populate the necessary dicts and ranges.
+        self.holding_register_ranges: list[tuple[int, int]] = []
         for sector in TMASector:
             sensor_list = TMA_SENSOR_DICT[sector]
             self.coils_dict[sector.name] = sensor_list[0].coil
-            self.holding_registers_dict[sector.name] = sensor_list[0].holding_register - 400000
+            start_idx = sensor_list[0].holding_register - 400000
+            self.holding_registers_dict[sector.name] = start_idx
+            self.holding_register_ranges.append((start_idx, start_idx + 99))
         self.coil_values: dict[str, list[bool]] = {}
         self.holding_register_values: dict[str, list[float]] = {}
+        self.process_all_registers_one_by_one = False
 
         # Set the number of addresses to read.
         self.num_coils = 100
